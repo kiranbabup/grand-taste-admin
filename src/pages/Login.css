@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.login-wrapper {
+    height: 100vh;
+    display: flex;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
+    background-color: #0f172a;
+}
+
+.wrapper-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+    z-index: 1;
+}
+
+.login-left {
+    flex: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    color: white;
+    position: relative;
+    z-index: 2;
+}
+
+.left-content {
+    max-width: 500px;
+}
+
+.left-content h1 {
+    font-size: 48px;
+    margin-bottom: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.left-content p {
+    color: #94a3b8;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.login-right {
+    flex: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    z-index: 2;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 48px;
+    border-radius: 32px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.login-card h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.subtitle {
+    margin-bottom: 40px;
+    color: #94a3b8;
+    font-size: 15px;
+    text-align: center;
+    display: block;
+}
+
+.input-group {
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    display: block;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 15px;
+}
+
+.login-card input::placeholder {
+    color: #64748b;
+}
+
+.login-card input:focus {
+    border-color: #6366f1;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    padding-right: 50px !important; /* Ensure space for the icon */
+}
+
+.password-toggle {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #94a3b8 !important;
+    padding: 8px !important;
+    background: transparent !important;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.login-card button:not(.password-toggle) {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    background: #6366f1;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+.login-card button:not(.password-toggle):hover:not(:disabled) {
+    background: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.login-card button:not(.password-toggle):active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.login-card button:not(.password-toggle):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #475569;
+}
+
+@media (max-width: 1024px) {
+    .login-left {
+        padding: 40px;
+    }
+    .left-content h1 {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 900px) {
+    .login-left {
+        display: none;
+    }
+    .login-right {
+        flex: 1;
+        background: #0f172a;
+    }
+    .login-card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        padding: 20px;
+    }
+}

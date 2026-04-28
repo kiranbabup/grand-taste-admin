@@ -1,0 +1,178 @@
+.products-container {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    width: 300px;
+    max-width: 100%;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+    padding: 12px;
+    text-align: left;
+}
+
+.product-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge.veg {
+    background: #e6fffa;
+    color: #00b894;
+}
+
+.badge.non-veg {
+    background: #fff5f5;
+    color: #ff6b6b;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn {
+    background: #4dabf7;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+}
+
+.delete-btn {
+    background: red;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+}
+
+/* ===== MODAL RESPONSIVE FIX ===== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 100%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group-row .form-group {
+    flex: 1;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    flex: 1;
+    padding: 12px;
+    background: #6c5ce7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+.cancel-btn {
+    padding: 12px;
+    background: #eee;
+    border: none;
+    border-radius: 8px;
+}
+
+/* ===== MOBILE FIX ===== */
+
+@media (max-width: 768px) {
+
+    .form-group-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .modal-content {
+        max-width: 100%;
+        border-radius: 12px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .save-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+}
