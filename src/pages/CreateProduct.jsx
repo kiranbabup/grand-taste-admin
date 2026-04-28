@@ -27,14 +27,12 @@ const CreateProduct = () => {
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        if (files.length + images.length > 5) {
-            toast.error("You can only upload up to 5 images.");
-            return;
+        if (files.length > 0) {
+            const file = files[0]; // Only take the first image
+            const newPreview = URL.createObjectURL(file);
+            setImages([file]); // Replace with single image
+            setPreviews([newPreview]);
         }
-
-        const newPreviews = files.map((file) => URL.createObjectURL(file));
-        setImages((prev) => [...prev, ...files]);
-        setPreviews((prev) => [...prev, ...newPreviews]);
     };
 
     const removeImage = (index) => {
@@ -210,7 +208,7 @@ const CreateProduct = () => {
                 </div>
 
                 <div className="image-upload-section">
-                    <label >Product Images (Max 5)</label>
+                    <label>Product Image</label>
                     <div style={{ padding: "20px" }} className="upload-container">
                         <input
                             type="file"

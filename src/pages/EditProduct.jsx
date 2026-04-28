@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../services/api";
+import { uploadImageToFirebase } from "../utils/firebaseImageUpload";
 import "./CreateProduct.css";
 
 const EditProduct = () => {
@@ -22,6 +23,8 @@ const EditProduct = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [images, setImages] = useState([]);
+    const [uploadingImage, setUploadingImage] = useState(false);
 
     useEffect(() => {
         if (location.state && location.state.product) {
@@ -37,6 +40,7 @@ const EditProduct = () => {
                 supervisorEarningValue: product.supervisorEarningValue || "0",
                 employeeEarningValue: product.employeeEarningValue || "0"
             });
+            setImages(product.images || []);
         } else {
             fetchProduct();
         }
@@ -57,6 +61,7 @@ const EditProduct = () => {
                 supervisorEarningValue: product.supervisorEarningValue || "0",
                 employeeEarningValue: product.employeeEarningValue || "0"
             });
+            setImages(product.images || []);
         } catch (error) {
             toast.error("Product details not found");
             navigate("/products");
@@ -66,6 +71,50 @@ const EditProduct = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+
+        try {
+            // Step 1: Upload to Firebase
+            const imageUrl = await uploadImageToFirebase(file, id);
+            
+            // Step 2: Send URL to backend to save in database
+            const response = await API.post(`/products/uploadImage/${id}`, {
+                imageUrl: imageUrl
+            });
+
+            if (response.data.images) {
+                setImages(response.data.images);
+                toast.success("Image uploaded successfully!");
+            }
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            toast.error(error.message || "Failed to upload image.");
+        } finally {
+            setUploadingImage(false);
+            e.target.value = ""; // Reset file input
+        }
+    };
+
+    const handleDeleteImage = async (imageUrl) => {
+        try {
+            const response = await API.delete(`/products/deleteImage/${id}`, {
+                data: { imageUrl }
+            });
+
+            if (response.data.images) {
+                setImages(response.data.images);
+                toast.success("Image deleted successfully!");
+            }
+        } catch (error) {
+            console.error("Error deleting image:", error);
+            toast.error(error.response?.data?.message || "Failed to delete image.");
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -196,6 +245,82 @@ const EditProduct = () => {
                             onChange={handleChange}
                         />
                     </div>
+                </div>
+
+                <div className="section-title">Product Images</div>
+                <div style={{ padding: "20px" }} className="upload-container">
+                    {/* Display existing images */}
+                    {images.length > 0 && (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "15px", marginBottom: "20px" }}>
+                            {images.map((imageUrl, index) => (
+                                <div key={index} className="preview-box" style={{ position: "relative", border: "1px solid #ddd", borderRadius: "8px", overflow: "hidden" }}>
+                                    <img
+                                        src={imageUrl}
+                                        alt={`Product ${index + 1}`}
+                                        style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteImage(imageUrl)}
+                                        className="remove-btn"
+                                        style={{
+                                            position: "absolute",
+                                            top: "5px",
+                                            right: "5px",
+                                            backgroundColor: "red",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "50%",
+                                            width: "30px",
+                                            height: "30px",
+                                            cursor: "pointer",
+                                            fontSize: "18px"
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Add image button - show only if less than 5 images */}
+                    {images.length < 5 && (
+                        <div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                id="file-upload-edit"
+                                hidden
+                                disabled={uploadingImage}
+                            />
+                            <label
+                                htmlFor="file-upload-edit"
+                                style={{
+                                    display: "inline-block",
+                                    padding: "15px 30px",
+                                    backgroundColor: "#4CAF50",
+                                    color: "white",
+                                    borderRadius: "5px",
+                                    cursor: uploadingImage ? "not-allowed" : "pointer",
+                                    opacity: uploadingImage ? 0.6 : 1,
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                {uploadingImage ? "Uploading..." : "+ Add Image"}
+                            </label>
+                            <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+                                {images.length}/5 images uploaded
+                            </p>
+                        </div>
+                    )}
+
+                    {images.length >= 5 && (
+                        <p style={{ color: "green", fontWeight: "bold" }}>
+                            ✓ All 5 images uploaded
+                        </p>
+                    )}
                 </div>
 
                 <div className="form-actions" style={{ display: 'flex', gap: '15px' }}>
