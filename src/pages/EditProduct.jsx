@@ -122,7 +122,13 @@ const EditProduct = () => {
         setLoading(true);
 
         try {
-            await API.put(`/products/updateProduct/${id}`, formData);
+            // Include images in the update
+            const dataToSubmit = {
+                ...formData,
+                images: images
+            };
+
+            await API.put(`/products/updateProduct/${id}`, dataToSubmit);
             toast.success("Product updated successfully");
             navigate("/products");
         } catch (error) {
@@ -251,13 +257,13 @@ const EditProduct = () => {
                 <div style={{ padding: "20px" }} className="upload-container">
                     {/* Display existing images */}
                     {images.length > 0 && (
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "15px", marginBottom: "20px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "15px", marginBottom: "20px" }}>
                             {images.map((imageUrl, index) => (
                                 <div key={index} className="preview-box" style={{ position: "relative", border: "1px solid #ddd", borderRadius: "8px", overflow: "hidden" }}>
                                     <img
                                         src={imageUrl}
                                         alt={`Product ${index + 1}`}
-                                        style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                                        style={{ width: "250px", height: "auto", }}
                                     />
                                     <button
                                         type="button"

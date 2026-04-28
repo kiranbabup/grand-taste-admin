@@ -19,8 +19,8 @@ export const uploadImageToFirebase = async (file, productId) => {
     const timestamp = Date.now();
     const filename = `${productId}_${timestamp}_${file.name}`;
     
-    // Reference to storage location: products/productId/filename
-    const storageRef = ref(storage, `products/${productId}/${filename}`);
+    // Reference to storage location: products/filename (flat structure)
+    const storageRef = ref(storage, `products/${filename}`);
     
     // Upload the file
     await uploadBytes(storageRef, file);

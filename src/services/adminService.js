@@ -109,3 +109,33 @@ export const getAllCustomers = async () => {
     throw error.response?.data || error.message;
   }
 };
+
+/**
+ * Get all orders with pagination (role-based scoping handled by backend)
+ * @param {number} page
+ * @param {number} limit
+ * @returns {Promise<Object>}
+ */
+export const getAllOrders = async (page = 1, limit = 10) => {
+  try {
+    const response = await API.get(`/orders/getAllOrders?page=${page}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * Update order status
+ * @param {string} id
+ * @param {string} status
+ * @returns {Promise<Object>}
+ */
+export const updateOrderStatus = async (id, status) => {
+  try {
+    const response = await API.put(`/orders/updateOrderStatus/${id}`, { status });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

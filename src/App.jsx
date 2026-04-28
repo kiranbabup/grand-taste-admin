@@ -14,6 +14,7 @@ import RegisterAdmin from "./pages/RegisterAdmin";
 import Login from "./pages/Login";
 import UserDetails from "./pages/UserDetails";
 import "./App.css";
+import Orders from "./pages/Orders";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -52,6 +53,7 @@ function App() {
                         <Route path="/products" element={<Products />} />
                         <Route path="/edit-product/:id" element={<EditProduct />} />
                         <Route path="/CreateProducts" element={<CreateProduct />} />
+                        <Route path="/orders" element={<Orders />} />
                       </Routes>
                     </div>
                   </div>

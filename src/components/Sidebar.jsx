@@ -49,6 +49,13 @@ const Sidebar = () => {
           Dashboard
         </Link>
         <Link
+          to="/orders"
+          onClick={closeSidebar}
+          className={location.pathname === "/orders" ? "active" : ""}
+        >
+          Orders
+        </Link>
+        <Link
           to="/admins"
           onClick={closeSidebar}
           className={location.pathname === "/admins" ? "active" : ""}
