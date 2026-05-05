@@ -16,10 +16,13 @@ import {
   TablePagination,
   Chip,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import toast from "react-hot-toast";
-import { getAllOrders, updateOrderStatus } from "../services/adminService";
+import { getAllOrders, searchByPhone, staffUpdateOrderStatus, superadminUpdateOrderStatus } from "../services/orderApis";
+import { Visibility } from "@mui/icons-material";
+import OrderDetails from "./OrderDetails";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -28,6 +31,12 @@ const Orders = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [userRole, setUserRole] = useState("");
+  const [searchPhone, setSearchPhone] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -48,6 +57,10 @@ const Orders = () => {
   }, [page, rowsPerPage]);
 
   const fetchOrders = async () => {
+    if (isSearching && searchPhone) {
+      handleSearch();
+      return;
+    }
     setLoading(true);
     try {
       const data = await getAllOrders(page + 1, rowsPerPage);
@@ -61,9 +74,44 @@ const Orders = () => {
     }
   };
 
+  const handleSearch = async () => {
+    if (!searchPhone) {
+      setIsSearching(false);
+      setPage(0);
+      fetchOrders();
+      return;
+    }
+    setLoading(true);
+    setIsSearching(true);
+    try {
+      const data = await searchByPhone(searchPhone);
+      // Search API returns an array directly or { orders: [] }
+      const ordersArray = Array.isArray(data) ? data : (data.orders || []);
+      setOrders(ordersArray);
+      setTotalItems(ordersArray.length);
+      setPage(0);
+    } catch (error) {
+      console.error("Error searching orders:", error);
+      toast.error("Search failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStatusUpdate = async (orderId, nextStatus) => {
     try {
-      await updateOrderStatus(orderId, nextStatus);
+      const superadminStatuses = ["Return - Initiated", "Return - Rejected", "Returned & Refunded"];
+
+      if (superadminStatuses.includes(nextStatus)) {
+        if (userRole !== "superadmin") {
+          toast.error("Only Superadmin can perform this action");
+          return;
+        }
+        await superadminUpdateOrderStatus(orderId, nextStatus);
+      } else {
+        await staffUpdateOrderStatus(orderId, nextStatus);
+      }
+
       toast.success(`Order status updated to ${nextStatus}`);
       fetchOrders();
     } catch (error) {
@@ -93,120 +141,147 @@ const Orders = () => {
     }).replace(",", "");
   };
 
+  const getStatusColor = (status) => {
+    const blue = ["Pending", "Shipped", "Cancel Request", "Return Request", "Return - Approved"];
+    const orange = ["Accepted", "Out for Delivery", "Return - Initiated"];
+    const red = ["Rejected", "Cancelled", "Return - Rejected"];
+    const green = ["Delivered", "Returned & Refunded"];
+
+    if (blue.includes(status)) return "#2563eb"; // Blue
+    if (orange.includes(status)) return "#f59e0b"; // Orange
+    if (red.includes(status)) return "#dc2626"; // Red
+    if (green.includes(status)) return "#16a34a"; // Green
+    return "#64748b";
+  };
+
   const renderStatusButtons = (order) => {
     const status = order.status;
     const id = order.id;
 
-    switch (status) {
-      case "Pending":
-        return (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              color="success"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStatusUpdate(id, "Accepted");
-              }}
-              sx={{ textTransform: "none", borderRadius: "8px" }}
-            >
-              Accept Order
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStatusUpdate(id, "Rejected");
-              }}
-              sx={{ textTransform: "none", borderRadius: "8px" }}
-            >
-              Reject Order
-            </Button>
-          </Box>
-        );
-      case "Accepted":
-        return (
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusUpdate(id, "Shipped");
-            }}
-            sx={{ textTransform: "none", borderRadius: "8px", bgcolor: "#2563eb" }}
-          >
-            Shipped
-          </Button>
-        );
-      case "Shipped":
-        return (
-          <Button
-            variant="contained"
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusUpdate(id, "Out for Delivery");
-            }}
-            sx={{ 
-              textTransform: "none", 
-              borderRadius: "8px", 
-              bgcolor: "#f59e0b",
-              "&:hover": { bgcolor: "#d97706" }
-            }}
-          >
-            Out for Delivery
-          </Button>
-        );
-      case "Out for Delivery":
-        return (
-          <Button
-            variant="contained"
-            color="success"
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusUpdate(id, "Delivered");
-            }}
-            sx={{ textTransform: "none", borderRadius: "8px" }}
-          >
-            Delivered
-          </Button>
-        );
-      case "Delivered":
-        return (
-          <Typography sx={{ color: "#16a34a", fontWeight: "600", fontSize: "0.875rem" }}>
-            Delivered
-          </Typography>
-        );
-      case "Rejected":
-        return (
-          <Typography sx={{ color: "#dc2626", fontWeight: "600", fontSize: "0.875rem" }}>
-            Rejected
-          </Typography>
-        );
-      default:
-        return (
-          <Chip label={status} size="small" variant="outlined" />
-        );
-    }
+    const ActionButton = ({ label, nextStatus, buttonColor, sx = {} }) => (
+      <Button
+        variant="contained"
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleStatusUpdate(id, nextStatus);
+        }}
+        sx={{
+          textTransform: "none",
+          borderRadius: "6px",
+          fontSize: "0.75rem",
+          fontWeight: "600",
+          px: 1.5,
+          bgcolor: buttonColor,
+          "&:hover": { bgcolor: buttonColor, opacity: 0.9 },
+          ...sx
+        }}
+      >
+        {label}
+      </Button>
+    );
+
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+        <Chip
+          label={status}
+          size="small"
+          sx={{
+            bgcolor: getStatusColor(status),
+            color: "white",
+            fontWeight: "700",
+            fontSize: "0.7rem",
+            mb: 0.5
+          }}
+        />
+
+        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: "center" }}>
+          {status === "Pending" && (
+            <>
+              {/* Added Accept button as it's implied for the Accepted state to exist */}
+              <ActionButton label="Accept" nextStatus="Accepted" buttonColor="#16a34a" />
+              <ActionButton label="Reject" nextStatus="Rejected" buttonColor="#dc2626" />
+            </>
+          )}
+
+          {status === "Accepted" && (
+            <>
+              <ActionButton label="Shipped" nextStatus="Shipped" buttonColor="#2563eb" />
+              <ActionButton label="Reject" nextStatus="Rejected" buttonColor="#dc2626" />
+            </>
+          )}
+
+          {status === "Cancel Request" && (
+            <ActionButton label="Cancelled" nextStatus="Cancelled" buttonColor="#dc2626" />
+          )}
+
+          {status === "Return Request" && userRole === "superadmin" && (
+            <>
+              <ActionButton label="Return - Initiated" nextStatus="Return - Initiated" buttonColor="#f59e0b" />
+              <ActionButton label="Return - Rejected" nextStatus="Return - Rejected" buttonColor="#dc2626" />
+            </>
+          )}
+
+          {status === "Return - Approved" && userRole === "superadmin" && (
+            <ActionButton label="Returned & Refunded" nextStatus="Returned & Refunded" buttonColor="#16a34a" />
+          )}
+        </Box>
+      </Box>
+    );
   };
 
   return (
     <Box sx={{ p: 4, bgcolor: "#f8fafc", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "700", color: "#1e293b" }}>
-        Orders
-      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: "700", color: "#1e293b" }}>
+          Orders Management
+        </Typography>
+
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <input
+            type="text"
+            placeholder="Search by phone..."
+            value={searchPhone}
+            onChange={(e) => setSearchPhone(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "8px",
+              border: "1px solid #e2e8f0",
+              outline: "none",
+              width: "250px"
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleSearch}
+            sx={{ bgcolor: "#0f766e", "&:hover": { bgcolor: "#0d645d" }, borderRadius: "8px", textTransform: "none" }}
+          >
+            Search
+          </Button>
+          {isSearching && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setSearchPhone("");
+                setIsSearching(false);
+                setPage(0);
+                fetchOrders();
+              }}
+              sx={{ color: "#0f766e", borderColor: "#0f766e", borderRadius: "8px", textTransform: "none" }}
+            >
+              Clear
+            </Button>
+          )}
+        </Box>
+      </Box>
 
       {/* Table Header Wrapper */}
-      <Box sx={{ 
-        display: "flex", 
-        bgcolor: "#0f766e", 
-        color: "white", 
-        p: 2, 
+      <Box sx={{
+        display: "flex",
+        bgcolor: "#0f766e",
+        color: "white",
+        p: 2,
         borderRadius: "8px 8px 0 0",
         fontWeight: "600",
         textAlign: "center",
@@ -234,8 +309,8 @@ const Orders = () => {
       ) : (
         <Box sx={{ borderRadius: "0 0 8px 8px", overflow: "hidden", border: "1px solid #e2e8f0", borderTop: "none" }}>
           {orders.map((order, index) => (
-            <Accordion key={order.id} sx={{ 
-              boxShadow: "none", 
+            <Accordion key={order.id} sx={{
+              boxShadow: "none",
               borderBottom: "1px solid #e2e8f0",
               "&:before": { display: "none" },
               "&.Mui-expanded": { margin: 0 }
@@ -243,14 +318,14 @@ const Orders = () => {
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 component="div"
-                sx={{ 
+                sx={{
                   flexDirection: "row-reverse",
                   "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
                     transform: "rotate(180deg)",
                   },
-                  "& .MuiAccordionSummary-content": { 
-                    display: "flex", 
-                    alignItems: "center", 
+                  "& .MuiAccordionSummary-content": {
+                    display: "flex",
+                    alignItems: "center",
                     textAlign: "center",
                     margin: "12px 0",
                     ml: 1
@@ -266,6 +341,18 @@ const Orders = () => {
                 <Box sx={{ flex: 1, fontWeight: "600" }}>₹{Number(order.totalPrice).toFixed(2)}</Box>
                 <Box sx={{ flex: 1 }}>{order.isPaid ? "Paid" : "Pending"}</Box>
                 <Box sx={{ flex: 2, display: "flex", justifyContent: "center" }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedOrderId(order.id);
+                      setOrderModalOpen(true);
+                    }}
+                    style={{ color: "#6C5CE7" }}
+                    title="View Details"
+                  >
+                    <Visibility fontSize="small" />
+                  </IconButton>
                   {renderStatusButtons(order)}
                 </Box>
               </AccordionSummary>
@@ -278,8 +365,9 @@ const Orders = () => {
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#2dd4bf" }}>
                         <TableCell sx={{ color: "white", fontWeight: "700" }}>Product Name</TableCell>
-                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Qty</TableCell>
                         <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Item Price</TableCell>
+                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Item Sell Price</TableCell>
+                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Qty</TableCell>
                         <TableCell align="right" sx={{ color: "white", fontWeight: "700" }}>Item Total</TableCell>
                       </TableRow>
                     </TableHead>
@@ -287,38 +375,39 @@ const Orders = () => {
                       {order.orderItems?.map((item) => (
                         <TableRow key={item.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                           <TableCell sx={{ color: "#475569" }}>{item.productname}</TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>{item.productprice}</TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>{item.sellingPrice}</TableCell>
                           <TableCell align="center" sx={{ color: "#475569" }}>{item.qty}</TableCell>
-                          <TableCell align="center" sx={{ color: "#475569" }}>{item.price}</TableCell>
                           <TableCell align="right" sx={{ fontWeight: "600", color: "#475569" }}>
-                            ₹{(item.qty * item.price).toFixed(2)}
+                            ₹{(item.qty * item.sellingPrice).toFixed(2)}
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
-                
+
                 <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "0.875rem" }}>
                   <Box>
-                      <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Name</Typography>
-                      <Typography variant="body2">
-                        {order.User?.name || 'N/A'
-                        }
-                      </Typography>
-                   </Box>
-                   <Box>
-                      <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Shipping Address</Typography>
-                      <Typography variant="body2">
-                        {order.shippingAddress 
-                          ? `Dr_no: ${order.shippingAddress.h_no}, Street: ${order.shippingAddress.street}, Address: ${order.shippingAddress.address}, Landmark: ${order.shippingAddress.landmark}, City: ${order.shippingAddress.city}, State: ${order.shippingAddress.state}, Pin Code: ${order.shippingAddress.pincode}`
-                          : 'N/A'
-                        }
-                      </Typography>
-                   </Box>
-                   <Box sx={{ textAlign: "right" }}>
-                      <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Contact</Typography>
-                      <Typography variant="body2">{order.phone}</Typography>
-                   </Box>
+                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Name</Typography>
+                    <Typography variant="body2">
+                      {order.User?.name || 'N/A'
+                      }
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Shipping Address</Typography>
+                    <Typography variant="body2">
+                      {order.shippingAddress
+                        ? `Dr_no: ${order.shippingAddress.h_no}, Street: ${order.shippingAddress.street}, Address: ${order.shippingAddress.address}, Landmark: ${order.shippingAddress.landmark}, City: ${order.shippingAddress.city}, State: ${order.shippingAddress.state}, Pin Code: ${order.shippingAddress.pincode}`
+                        : 'N/A'
+                      }
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: "right" }}>
+                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Contact</Typography>
+                    <Typography variant="body2">{order.phone}</Typography>
+                  </Box>
                 </Box>
               </AccordionDetails>
             </Accordion>
@@ -335,6 +424,14 @@ const Orders = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         sx={{ mt: 2, border: "none" }}
+      />
+      <OrderDetails 
+        orderId={selectedOrderId} 
+        open={orderModalOpen} 
+        onClose={() => {
+          setOrderModalOpen(false);
+          setSelectedOrderId(null);
+        }} 
       />
     </Box>
   );

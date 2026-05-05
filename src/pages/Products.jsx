@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import API from "../services/api";
 import "./Products.css";
 import ImageModal from "../components/ImageModal";
+import { IconButton } from "@mui/material";
+import { Visibility } from "@mui/icons-material";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -118,6 +120,9 @@ const Products = () => {
                 Discount
               </th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white" }}>
+                Selling Price
+              </th>
+              <th style={{ backgroundColor: "#6C5CE7", color: "white" }}>
                 Stock
               </th>
               <th
@@ -164,7 +169,7 @@ const Products = () => {
                   <td>
                     <img
                       src={
-                        product.images?.[0] || "https://via.placeholder.com/50"
+                        product.images?.[0]
                       }
                       alt={product.productname}
                       className="product-thumb"
@@ -194,8 +199,9 @@ const Products = () => {
                       {product.category}
                     </span>
                   </td>
-                  <td style={{ color: "black" }}>₹{product.productprice}</td>
+                  <td style={{ color: "black", textDecoration: "line-through" }}>₹{product.productprice}</td>
                   <td style={{ color: "black" }}>₹{product.discountvalue}</td>
+                  <td style={{ color: "black" }}>₹{product.sellingPrice}</td>
                   <td style={{ color: "black" }}>{product.stock}</td>
                   <td>
                     <div
@@ -206,6 +212,14 @@ const Products = () => {
                         justifyContent: "center",
                       }}
                     >
+                      <IconButton
+                        size="small"
+                        onClick={() => navigate(`/product/${product.id}`)}
+                        style={{ color: "#6C5CE7" }}
+                        title="View Details"
+                      >
+                        <Visibility fontSize="small" />
+                      </IconButton>
                       <button
                         onClick={() => startEdit(product)}
                         style={{

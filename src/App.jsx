@@ -15,7 +15,8 @@ import Staff from "./pages/Staff";
 import CreateProduct from "./pages/CreateProduct";
 import Products from "./pages/Products";
 import EditProduct from "./pages/EditProduct";
-// import Orders from "./pages/Orders";
+import ProductDetails from "./pages/ProductDetails";
+import Orders from "./pages/Orders";
 
 const ProtectedRoute = ({ children }) => {
   const user = LsService.getCurrentUser();
@@ -49,7 +50,7 @@ function App() {
 
                         <Route path="/admins" element={<Admins />} />
                         <Route path="/user/:userId" element={<UserDetails />} />
-                        {/* <Route path="/register-admin" element={<RegisterAdmin />} /> */}
+                        <Route path="/register-admin" element={<RegisterAdmin />} />
 
                         <Route path="/supervisors" element={<Staff functionalWord={getAllStaffByRole} roleWord="supervisor" />} />
                         <Route path="/employees" element={<Staff functionalWord={getAllStaffByRole} roleWord="employee" />} />
@@ -57,8 +58,8 @@ function App() {
                         <Route path="/CreateProducts" element={<CreateProduct />} />
                         <Route path="/edit-product/:id" element={<EditProduct />} />
                         <Route path="/products" element={<Products />} />
-                        {/* 
-                        <Route path="/orders" element={<Orders />} /> */}
+                        <Route path="/product/:productId" element={<ProductDetails />} />
+                        <Route path="/orders" element={<Orders />} />
                       </Routes>
                     </div>
                   </div>

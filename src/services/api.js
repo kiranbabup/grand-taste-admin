@@ -10,7 +10,7 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const user = LsService.getCurrentUser();
   const token = user?.token;
-  console.log(token);
+  // console.log(token);
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

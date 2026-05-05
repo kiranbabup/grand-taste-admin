@@ -273,3 +273,31 @@
   cursor: not-allowed;
   box-shadow: none;
 }
+
+.back-btn {
+  padding: 14px 35px;
+  background: linear-gradient(135deg, #c43d3d, #b12e2e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 8px 20px rgba(95, 61, 196, 0.2);
+}
+
+.back-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(95, 61, 196, 0.3);
+}
+
+.back-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.back-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}

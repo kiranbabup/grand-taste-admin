@@ -115,3 +115,14 @@ export const updateUserById = async (id, userData) => {
     throw error.response?.data || error.message;
   }
 };
+
+export const getUserById = async (userid) => {
+  try {
+    const response = await API.get(`/users/users/${userid}`);
+    // console.log(response.data);
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};

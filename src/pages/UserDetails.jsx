@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../services/api";
 import UserTable from "../components/UserTable";
-import { updateUserById, getUserBySearch } from "../services/userService";
+import { updateUserById, getUserById } from "../services/userService";
 import { getDownlineMembers } from "../services/adminService";
+import { Box, Typography } from "@mui/material";
 
 const UserDetails = () => {
     const { userId } = useParams();
@@ -24,12 +25,11 @@ const UserDetails = () => {
         try {
             setLoading(true);
             // 1. Fetch the user details using the search API (userId is the phone number)
-            const searchData = await getUserBySearch(userId);
+            const userData = await getUserById(userId);
             let userDetails = null;
-            if (searchData) {
-                userDetails = searchData.users[0];
-                setUserData(searchData.users[0])
-                // console.log(searchData.users[0]);
+            if (userData) {
+                userDetails = userData;
+                setUserData(userData)
             }
             if (!userDetails) {
                 setError("User not found.");
@@ -91,13 +91,32 @@ const UserDetails = () => {
             <div style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", marginBottom: "30px", color: "black" }}>
                 <h2 style={{ marginTop: 0, marginBottom: "20px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>User Profile</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-                    <div><strong>Name:</strong> {userData.name}</div>
-                    <div><strong>Phone:</strong> {userData.phone}</div>
-                    <div><strong>Role:</strong> <span style={{ textTransform: "capitalize" }}>{userData.role}</span></div>
-                    <div><strong>Status:</strong> <span style={{ color: userData.status === 'active' ? 'green' : 'red' }}>{userData.status}</span></div>
-                    {/* <div><strong>Earnings:</strong> ₹{userData.earnings || 0}</div> */}
-                    <div><strong>Referral ID:</strong> {userData.referalcode}</div>
-                    {/* <div><strong>Referred By:</strong> {userData.referedby || 'None'}</div> */}
+                    <div><strong>Name:</strong> {userData?.name}</div>
+                    <div><strong>Phone:</strong> {userData?.phone}</div>
+                    <div><strong>Role:</strong> <span style={{ textTransform: "capitalize" }}>{userData?.role}</span></div>
+                    <div><strong>Status:</strong> <span style={{ color: userData?.status === 'active' ? 'green' : 'red' }}>{userData?.status}</span></div>
+                    {userData?.role !== "customer" && (
+                        <div><strong>Earnings:</strong> ₹{userData?.earnings || 0}</div>)}
+                    <div><strong>Pincode:</strong> {userData?.pincode || "N/A"}</div>
+                    <div><strong>email:</strong> {userData?.email || "N/A"}</div>
+                    {userData?.role !== "customer" && (
+                        <div><strong>Referral Code:</strong> {userData?.referalcode || "N/A"}</div>)}
+                    <div><strong>Referred By:</strong> {userData?.referedby || 'None'}</div>
+                        <br />
+                    <Typography variant="h5" sx={{ textDecoration: "underline" }}>Addresses:</Typography>
+                    {userData?.addresses?.map((address) => (
+                        <Box sx={{ display: "flex", flexDirection: "row", backgroundColor: "white", color: "black", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", marginBottom: "30px" }}>
+                            <Box sx={{ display: "flex", flexDirection: "column" }}>
+                                <div><strong>Address Type:</strong> {address?.addressType || "N/A"}</div>
+                                <div><strong>House No:</strong> {address?.h_no || "N/A"}</div>
+                                <div><strong>Street:</strong> {address?.street || "N/A"}</div>
+                                <div><strong>Landmark:</strong> {address?.landmark || "N/A"}</div>
+                                <div><strong>City:</strong> {address?.city || "N/A"}</div>
+                                <div><strong>State:</strong> {address?.state || "N/A"}</div>
+                                <div><strong>Pincode:</strong> {address?.pincode || "N/A"}</div>
+                            </Box>
+                        </Box>
+                    ))}
                 </div>
             </div>
 
