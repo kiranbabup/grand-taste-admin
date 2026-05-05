@@ -214,11 +214,12 @@ const Orders = () => {
       }}>
         <Box sx={{ width: "48px" }} /> {/* Spacer for Expand Icon */}
         <Box sx={{ flex: 0.5 }}>S No</Box>
-        <Box sx={{ flex: 1.5 }}>Invoice No</Box>
+        <Box sx={{ flex: 1 }}>Invoice No</Box>
         <Box sx={{ flex: 2 }}>Order Date</Box>
-        <Box sx={{ flex: 1 }}>Payment</Box>
+        <Box sx={{ flex: 1 }}>Payment Type</Box>
         <Box sx={{ flex: 1 }}>GST</Box>
-        <Box sx={{ flex: 1.5 }}>Total</Box>
+        <Box sx={{ flex: 1 }}>Total</Box>
+        <Box sx={{ flex: 1 }}>Payment Status</Box>
         <Box sx={{ flex: 2 }}>Action</Box>
       </Box>
 
@@ -258,11 +259,12 @@ const Orders = () => {
                 }}
               >
                 <Box sx={{ flex: 0.5 }}>{page * rowsPerPage + index + 1}</Box>
-                <Box sx={{ flex: 1.5 }}>{order.orderId}</Box>
+                <Box sx={{ flex: 1 }}>{order.orderId}</Box>
                 <Box sx={{ flex: 2 }}>{formatDate(order.createdAt)}</Box>
                 <Box sx={{ flex: 1 }}>{order.paymentMethod === "Cash on Delivery" ? "cash" : order.paymentMethod}</Box>
                 <Box sx={{ flex: 1 }}>₹{(order.totalPrice * 0.05).toFixed(2)}</Box>
-                <Box sx={{ flex: 1.5, fontWeight: "600" }}>₹{Number(order.totalPrice).toFixed(2)}</Box>
+                <Box sx={{ flex: 1, fontWeight: "600" }}>₹{Number(order.totalPrice).toFixed(2)}</Box>
+                <Box sx={{ flex: 1 }}>{order.isPaid ? "Paid" : "Pending"}</Box>
                 <Box sx={{ flex: 2, display: "flex", justifyContent: "center" }}>
                   {renderStatusButtons(order)}
                 </Box>
@@ -277,6 +279,7 @@ const Orders = () => {
                       <TableRow sx={{ bgcolor: "#2dd4bf" }}>
                         <TableCell sx={{ color: "white", fontWeight: "700" }}>Product Name</TableCell>
                         <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Qty</TableCell>
+                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Item Price</TableCell>
                         <TableCell align="right" sx={{ color: "white", fontWeight: "700" }}>Item Total</TableCell>
                       </TableRow>
                     </TableHead>
@@ -285,6 +288,7 @@ const Orders = () => {
                         <TableRow key={item.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                           <TableCell sx={{ color: "#475569" }}>{item.productname}</TableCell>
                           <TableCell align="center" sx={{ color: "#475569" }}>{item.qty}</TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>{item.price}</TableCell>
                           <TableCell align="right" sx={{ fontWeight: "600", color: "#475569" }}>
                             ₹{(item.qty * item.price).toFixed(2)}
                           </TableCell>
@@ -295,9 +299,21 @@ const Orders = () => {
                 </TableContainer>
                 
                 <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "0.875rem" }}>
+                  <Box>
+                      <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Name</Typography>
+                      <Typography variant="body2">
+                        {order.User?.name || 'N/A'
+                        }
+                      </Typography>
+                   </Box>
                    <Box>
                       <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Shipping Address</Typography>
-                      <Typography variant="body2">{order.shippingAddress?.street}, {order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.zip}</Typography>
+                      <Typography variant="body2">
+                        {order.shippingAddress 
+                          ? `Dr_no: ${order.shippingAddress.h_no}, Street: ${order.shippingAddress.street}, Address: ${order.shippingAddress.address}, Landmark: ${order.shippingAddress.landmark}, City: ${order.shippingAddress.city}, State: ${order.shippingAddress.state}, Pin Code: ${order.shippingAddress.pincode}`
+                          : 'N/A'
+                        }
+                      </Typography>
                    </Box>
                    <Box sx={{ textAlign: "right" }}>
                       <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Contact</Typography>

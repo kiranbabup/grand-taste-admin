@@ -6,14 +6,18 @@ import "./CreateProduct.css";
 const CreateProduct = () => {
     const [formData, setFormData] = useState({
         productname: "",
-        price: "",
-        discount: "0",
-        stock: "",
+        slug: "",
         description: "",
         category: "veg",
-        adminEarningValue: "0",
-        supervisorEarningValue: "0",
-        employeeEarningValue: "0",
+        productprice: 0.00,
+        discountvalue: 0.00,
+        gstpercentage: 0.00,
+        hsncode: "",
+        stock: 0,
+        unit: "", // pcs / kg / g / ltr / ml ...
+        adminEarningValue: 0.00,
+        supervisorEarningValue: 0.00,
+        employeeEarningValue: 0.00,
     });
 
     const [images, setImages] = useState([]);
@@ -29,16 +33,24 @@ const CreateProduct = () => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
             const file = files[0]; // Only take the first image
+
+            // Clean up old preview if exists
+            if (previews.length > 0) {
+                URL.revokeObjectURL(previews[0]);
+            }
+
             const newPreview = URL.createObjectURL(file);
             setImages([file]); // Replace with single image
             setPreviews([newPreview]);
         }
     };
 
-    const removeImage = (index) => {
-        URL.revokeObjectURL(previews[index]);
-        setImages((prev) => prev.filter((_, i) => i !== index));
-        setPreviews((prev) => prev.filter((_, i) => i !== index));
+    const removeImage = () => {
+        if (previews.length > 0) {
+            URL.revokeObjectURL(previews[0]);
+        }
+        setImages([]);
+        setPreviews([]);
     };
 
     const handleSubmit = async (e) => {
@@ -55,7 +67,7 @@ const CreateProduct = () => {
         });
 
         try {
-            const response = await API.post("/products/createProduct", data, {
+            const response = await API.post("/products/create", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -65,14 +77,18 @@ const CreateProduct = () => {
                 toast.success("Product created successfully!");
                 setFormData({
                     productname: "",
-                    price: "",
-                    discount: "0",
-                    stock: "",
+                    slug: "",
                     description: "",
                     category: "veg",
-                    adminEarningValue: "0",
-                    supervisorEarningValue: "0",
-                    employeeEarningValue: "0",
+                    productprice: 0.00,
+                    discountvalue: 0.00,
+                    gstpercentage: 0.00,
+                    hsncode: "",
+                    stock: 0,
+                    unit: "",
+                    adminEarningValue: 0.00,
+                    supervisorEarningValue: 0.00,
+                    employeeEarningValue: 0.00,
                 });
                 setImages([]);
                 setPreviews([]);
@@ -107,11 +123,22 @@ const CreateProduct = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Price (₹)</label>
+                        <label>Slug (Short Name)</label>
+                        <input
+                            type="text"
+                            name="slug"
+                            value={formData.slug}
+                            onChange={handleChange}
+                            placeholder="e.g. delicious-veg-burger"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>MRP Price (₹)</label>
                         <input
                             type="number"
-                            name="price"
-                            value={formData.price}
+                            name="productprice"
+                            value={formData.productprice}
                             onChange={handleChange}
                             placeholder="0.00"
                             required
@@ -119,15 +146,36 @@ const CreateProduct = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Discount (%)</label>
+                        <label>Discount (Amount)</label>
                         <input
                             type="number"
-                            name="discount"
-                            value={formData.discount}
+                            name="discountvalue"
+                            value={formData.discountvalue}
                             onChange={handleChange}
                             placeholder="0"
                             min="0"
-                            max="100"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>GST Percentage (%)</label>
+                        <input
+                            type="number"
+                            name="gstpercentage"
+                            value={formData.gstpercentage}
+                            onChange={handleChange}
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>HSN Code</label>
+                        <input
+                            type="text"
+                            name="hsncode"
+                            value={formData.hsncode}
+                            onChange={handleChange}
+                            placeholder="Enter HSN code"
                         />
                     </div>
 
@@ -144,6 +192,24 @@ const CreateProduct = () => {
                     </div>
 
                     <div className="form-group">
+                        <label>Unit (e.g. pcs, kg, ltr)</label>
+                        <select
+                            name="unit"
+                            value={formData.unit}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select Unit</option>
+                            <option value="pcs">pcs</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="ltr">ltr</option>
+                            <option value="ml">ml</option>
+                            <option value="packet">packet</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
                         <label>Category</label>
                         <select
                             name="category"
@@ -153,8 +219,6 @@ const CreateProduct = () => {
                         >
                             <option value="veg">Veg</option>
                             <option value="non-veg">Non-Veg</option>
-                            {/* <option value="spices">Spices</option> */}
-                            {/* <option value="grains">Grains</option> */}
                         </select>
                     </div>
                 </div>
@@ -209,32 +273,39 @@ const CreateProduct = () => {
 
                 <div className="image-upload-section">
                     <label>Product Image</label>
-                    <div style={{ padding: "20px" }} className="upload-container">
+                    <div className="image-upload-wrapper">
                         <input
                             type="file"
-                            multiple
                             accept="image/*"
                             onChange={handleImageChange}
-                            id="file-upload"
-                            hidden
+                            id="image-input"
                         />
-                        <label htmlFor="file-upload" className="upload-box" style={{ cursor: "pointer", color: "blue" }}>
-                            <span className="plus">+</span>
-                            <span>Add Images</span>
-                        </label>
 
-                        {previews.map((preview, index) => (
-                            <div key={index} className="preview-box">
-                                <img src={preview} style={{ width: "300px" }} alt={`preview ${index}`} />
-                                <button
-                                    type="button"
-                                    onClick={() => removeImage(index)}
-                                    className="remove-btn"
-                                >
-                                    ×
-                                </button>
+                        {previews.length === 0 ? (
+                            <label htmlFor="image-input" className="image-upload-label">
+                                <span>+ Add Image</span>
+                                <small>Click to upload product photo</small>
+                            </label>
+                        ) : (
+                            <div className="image-previews">
+                                {previews.map((preview, index) => (
+                                    <div key={index} className="preview-card">
+                                        <img src={preview} alt="Product Preview" />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="remove-btn"
+                                            title="Remove image"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                                <label htmlFor="image-input" className="clear-all" style={{ textAlign: 'center', display: 'block', marginTop: '10px', color: '#5f3dc4', cursor: 'pointer' }}>
+                                    Change Image
+                                </label>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 

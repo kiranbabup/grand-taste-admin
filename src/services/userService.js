@@ -64,7 +64,9 @@ export const getUsersByRole = async (role, page = 1, limit = 10) => {
  */
 export const getUserBySearch = async (searchString) => {
   try {
-    const response = await API.get(`/users/getUserbySearchByString/${searchString}`);
+    const response = await API.get(`/users/users/search/${searchString}`);
+    // console.log(response.data);
+    
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -107,7 +109,7 @@ export const getUsersByReferralCode = async (referralCode) => {
  */
 export const updateUserById = async (id, userData) => {
   try {
-    const response = await API.put(`/users/updateUserById/${id}`, userData);
+    const response = await API.put(`/users/users/status/${id}`, userData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

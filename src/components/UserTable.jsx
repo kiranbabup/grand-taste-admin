@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Visibility } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 
-const UserTable = ({ users, onToggleStatus, type, totalPages, currentPage, onPageChange }) => {
+const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 1, onPageChange }) => {
   const navigate = useNavigate();
 
   const getReferralLabel = () => {
@@ -10,13 +10,6 @@ const UserTable = ({ users, onToggleStatus, type, totalPages, currentPage, onPag
     if (type === "supervisor") return "Employees";
     if (type === "employee") return "Customers";
     return "Refers";
-  };
-
-  const getReferralCount = (user) => {
-    if (type === "admin") return user.supervisor_count || user.supervisors?.length || user.children?.length || 0;
-    if (type === "supervisor") return user.employee_count || user.employees?.length || user.children?.length || 0;
-    if (type === "employee") return user.customer_count || user.customers?.length || user.children?.length || 0;
-    return 0;
   };
 
   const handleViewClick = (userId) => {
@@ -63,13 +56,13 @@ const UserTable = ({ users, onToggleStatus, type, totalPages, currentPage, onPag
                   </span>
                 </td>
                 {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>}
-                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{getReferralCount(user)}</td>}
+                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.directReferrals}</td>}
                 <td style={{ padding: "12px", textAlign: "center" }}>
                   <div className="action-buttons" style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>
                     {type !== "customer" && (
                         <IconButton 
                             size="small" 
-                            onClick={() => handleViewClick(user.id || user.user_id)}
+                            onClick={() => handleViewClick(user.phone)}
                             style={{ color: "#6C5CE7" }}
                             title="View Details"
                         >

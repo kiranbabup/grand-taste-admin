@@ -1,27 +1,32 @@
 import React from "react";
 import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authService";
+import { Typography } from "@mui/material";
+import LsService from "../services/localstorage";
 
 const Topbar = () => {
     const navigate = useNavigate();
+    const user = LsService.getCurrentUser();
 
     return (
         <div className="topbar">
 
             <div
                 className="logo-container"
-                onClick={() => navigate("/super-admin")}
+                onClick={() => navigate("/dashboard")}
                 style={{ cursor: "pointer" }}
             >
-                <img src={logo} alt="Super Admin Logo" style={{ height: "50px", objectFit: "contain" }} />
+                <img src={logo} alt="Logo" style={{ height: "50px", objectFit: "contain" }} />
             </div>
-
+            <Typography variant="h5" sx={{ flexGrow: 1, textAlign: "center", fontWeight: "bold" }}>
+                {user?.role.toUpperCase()}
+            </Typography>
             <div className="profile" style={{ marginRight: "30px" }}>
                 <button
                     onClick={() => {
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("user");
-                        window.location.href = "/";
+                        logoutUser();
+                        navigate("/");
                     }}
                     style={{
                         padding: "8px 16px",

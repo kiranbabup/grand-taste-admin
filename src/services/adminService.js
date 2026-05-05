@@ -60,7 +60,9 @@ export const getDashboardStats = async () => {
  */
 export const getAllAdmins = async (page = 1, limit = 10) => {
   try {
-    const response = await API.get(`/admin/all-admins?page=${page}&limit=${limit}`);
+    const response = await API.get(`/users/users/by-role/admin?page=${page}&limit=${limit}`);
+    console.log(response.data);
+
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -73,9 +75,9 @@ export const getAllAdmins = async (page = 1, limit = 10) => {
  * @param {number} limit
  * @returns {Promise<Object>}
  */
-export const getAllSupervisors = async (page = 1, limit = 10) => {
+export const getAllStaffByRole = async (role, page = 1, limit = 10) => {
   try {
-    const response = await API.get(`/admin/all-supervisors?page=${page}&limit=${limit}`);
+    const response = await API.get(`/users/users/by-role/${role}?page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -83,27 +85,15 @@ export const getAllSupervisors = async (page = 1, limit = 10) => {
 };
 
 /**
- * Get all employees with pagination
- * @param {number} page
- * @param {number} limit
+ * Get downline members by referral code
+ * @param {string} referalcode
  * @returns {Promise<Object>}
  */
-export const getAllEmployees = async (page = 1, limit = 10) => {
+export const getDownlineMembers = async (referalcode) => {
   try {
-    const response = await API.get(`/admin/all-employees?page=${page}&limit=${limit}`);
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
-};
+    const response = await API.get(`/users/users/downline/${referalcode}`);
+    // console.log(response.data);
 
-/**
- * Get all customers
- * @returns {Promise<Object>}
- */
-export const getAllCustomers = async () => {
-  try {
-    const response = await API.get("/users/getUsersByRole/customer");
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

@@ -29,7 +29,7 @@ const Products = () => {
   const fetchProducts = async (page) => {
     setLoading(true);
     try {
-      const res = await API.get(`/products/getProducts?page=${page}&limit=10`);
+      const res = await API.get(`/products/admin/all?page=${page}&limit=10`);
       setProducts(res.data.products || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (error) {
@@ -44,7 +44,7 @@ const Products = () => {
     setLoading(true);
     try {
       const res = await API.get(
-        `/products/getProductsSearchByString/${query}?page=${page}&limit=10`,
+        `/products/admin/search/${query}?page=${page}&limit=10`,
       );
       setProducts(res.data.products || []);
       setTotalPages(res.data.totalPages || 1);
@@ -194,8 +194,8 @@ const Products = () => {
                       {product.category}
                     </span>
                   </td>
-                  <td style={{ color: "black" }}>₹{product.price}</td>
-                  <td style={{ color: "black" }}>{product.discount}%</td>
+                  <td style={{ color: "black" }}>₹{product.productprice}</td>
+                  <td style={{ color: "black" }}>₹{product.discountvalue}</td>
                   <td style={{ color: "black" }}>{product.stock}</td>
                   <td>
                     <div

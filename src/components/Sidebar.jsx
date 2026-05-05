@@ -4,6 +4,9 @@ import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import "./sidebarcss.css";
+import LsService from "../services/localstorage";
+import { logoutUser } from "../services/authService";
+import { Box, Typography } from "@mui/material";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,15 +15,21 @@ const Sidebar = () => {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const closeSidebar = () => setIsOpen(false);
 
+  const user = LsService.getCurrentUser();
+  const userRole = user?.role || "";
+
   return (
     <>
       <div className="mobile-header">
         <button className="hamburger" onClick={toggleSidebar}>
           ☰
         </button>
+        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center", fontWeight: "bold" }}>
+          {user?.role.toUpperCase()}
+        </Typography>
         <div
           className="logo-container"
-          onClick={() => navigate("/super-admin")}
+          onClick={() => navigate("/dashboard")}
           style={{ cursor: "pointer" }}
         >
           <img
@@ -35,68 +44,88 @@ const Sidebar = () => {
 
       <div className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
-          <h2>Super Admin</h2>
-          <button className="close-sidebar" onClick={closeSidebar}>
-            ×
-          </button>
+          <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
+            <button className="close-sidebar" onClick={closeSidebar}>×</button>
+          </Box>
+          <h2>{userRole === "superadmin" ? "Super Admin" : userRole === "admin" ? "Admin" : "Supervisor"}</h2>
         </div>
 
-        <Link
-          to="/super-admin"
-          onClick={closeSidebar}
-          className={location.pathname === "/super-admin" ? "active" : ""}
-        >
-          Dashboard
-        </Link>
-        <Link
-          to="/orders"
-          onClick={closeSidebar}
-          className={location.pathname === "/orders" ? "active" : ""}
-        >
-          Orders
-        </Link>
-        <Link
-          to="/admins"
-          onClick={closeSidebar}
-          className={location.pathname === "/admins" ? "active" : ""}
-        >
-          Admins
-        </Link>
-        <Link
-          to="/supervisors"
-          onClick={closeSidebar}
-          className={location.pathname === "/supervisors" ? "active" : ""}
-        >
-          Supervisors
-        </Link>
-        <Link
-          to="/employees"
-          onClick={closeSidebar}
-          className={location.pathname === "/employees" ? "active" : ""}
-        >
-          Employees
-        </Link>
-        <Link
-          to="/customers"
-          onClick={closeSidebar}
-          className={location.pathname === "/customers" ? "active" : ""}
-        >
-          Customers
-        </Link>
-        <Link
-          to="/products"
-          onClick={closeSidebar}
-          className={location.pathname === "/products" ? "active" : ""}
-        >
-          Products
-        </Link>
-        <Link
-          to="/CreateProducts"
-          onClick={closeSidebar}
-          className={location.pathname === "/CreateProducts" ? "active" : ""}
-        >
-          Create Product
-        </Link>
+        {["superadmin", "admin", "supervisor"].includes(userRole) && (
+          <>
+            <Link
+              to="/dashboard"
+              onClick={closeSidebar}
+              className={location.pathname === "/dashboard" ? "active" : ""}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/orders"
+              onClick={closeSidebar}
+              className={location.pathname === "/orders" ? "active" : ""}
+            >
+              Orders
+            </Link>
+          </>
+        )}
+
+        {userRole === "superadmin" && (
+          <Link
+            to="/admins"
+            onClick={closeSidebar}
+            className={location.pathname === "/admins" ? "active" : ""}
+          >
+            Admins
+          </Link>
+        )}
+
+        {["superadmin", "admin"].includes(userRole) && (
+          <Link
+            to="/supervisors"
+            onClick={closeSidebar}
+            className={location.pathname === "/supervisors" ? "active" : ""}
+          >
+            Supervisors
+          </Link>
+        )}
+
+        {["superadmin", "admin", "supervisor"].includes(userRole) && (
+          <>
+            <Link
+              to="/employees"
+              onClick={closeSidebar}
+              className={location.pathname === "/employees" ? "active" : ""}
+            >
+              Employees
+            </Link>
+            <Link
+              to="/customers"
+              onClick={closeSidebar}
+              className={location.pathname === "/customers" ? "active" : ""}
+            >
+              Customers
+            </Link>
+          </>
+        )}
+
+        {userRole === "superadmin" && (
+          <>
+            <Link
+              to="/products"
+              onClick={closeSidebar}
+              className={location.pathname === "/products" ? "active" : ""}
+            >
+              Products
+            </Link>
+            <Link
+              to="/CreateProducts"
+              onClick={closeSidebar}
+              className={location.pathname === "/CreateProducts" ? "active" : ""}
+            >
+              Create Product
+            </Link>
+          </>
+        )}
 
         <div
           style={{
@@ -108,9 +137,8 @@ const Sidebar = () => {
           <button
             className="logout"
             onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("user");
-              window.location.href = "/";
+              logoutUser();
+              navigate("/");
             }}
           >
             Sign Out

@@ -12,33 +12,47 @@ const EditProduct = () => {
 
     const [formData, setFormData] = useState({
         productname: "",
-        price: "",
-        discount: "0",
-        stock: "",
+        slug: "",
         description: "",
         category: "veg",
-        adminEarningValue: "0",
-        supervisorEarningValue: "0",
-        employeeEarningValue: "0"
+        productprice: 0,
+        discountvalue: 0,
+        gstpercentage: 0,
+        hsncode: "",
+        stock: 0,
+        unit: "",
+        adminEarningValue: 0,
+        supervisorEarningValue: 0,
+        employeeEarningValue: 0,
     });
 
     const [loading, setLoading] = useState(false);
     const [images, setImages] = useState([]);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [filePreview, setFilePreview] = useState(null);
+
+    // Modal states
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [imageToDelete, setImageToDelete] = useState(null);
 
     useEffect(() => {
         if (location.state && location.state.product) {
             const product = location.state.product;
             setFormData({
                 productname: product.productname || "",
-                price: product.price || "",
-                discount: product.discount || "0",
-                stock: product.stock || "",
+                slug: product.slug || "",
                 description: product.description || "",
                 category: product.category || "veg",
-                adminEarningValue: product.adminEarningValue || "0",
-                supervisorEarningValue: product.supervisorEarningValue || "0",
-                employeeEarningValue: product.employeeEarningValue || "0"
+                productprice: product.productprice || 0,
+                discountvalue: product.discountvalue || 0,
+                gstpercentage: product.gstpercentage || 0,
+                hsncode: product.hsncode || "",
+                stock: product.stock || 0,
+                unit: product.unit || "",
+                adminEarningValue: product.adminEarningValue || 0,
+                supervisorEarningValue: product.supervisorEarningValue || 0,
+                employeeEarningValue: product.employeeEarningValue || 0,
             });
             setImages(product.images || []);
         } else {
@@ -48,18 +62,22 @@ const EditProduct = () => {
 
     const fetchProduct = async () => {
         try {
-            const res = await API.get(`/products/getProductById/${id}`);
+            const res = await API.get(`/products/getProductByid/${id}`);
             const product = res.data;
             setFormData({
                 productname: product.productname || "",
-                price: product.price || "",
-                discount: product.discount || "0",
-                stock: product.stock || "",
+                slug: product.slug || "",
                 description: product.description || "",
                 category: product.category || "veg",
-                adminEarningValue: product.adminEarningValue || "0",
-                supervisorEarningValue: product.supervisorEarningValue || "0",
-                employeeEarningValue: product.employeeEarningValue || "0"
+                productprice: product.productprice || 0,
+                discountvalue: product.discountvalue || 0,
+                gstpercentage: product.gstpercentage || 0,
+                hsncode: product.hsncode || "",
+                stock: product.stock || 0,
+                unit: product.unit || "",
+                adminEarningValue: product.adminEarningValue || 0,
+                supervisorEarningValue: product.supervisorEarningValue || 0,
+                employeeEarningValue: product.employeeEarningValue || 0,
             });
             setImages(product.images || []);
         } catch (error) {
@@ -73,15 +91,22 @@ const EditProduct = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleImageUpload = async (e) => {
+    const handleFileSelect = (e) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) {
+            setSelectedFile(file);
+            setFilePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleImageUpload = async () => {
+        if (!selectedFile) return;
 
         setUploadingImage(true);
 
         try {
             // Step 1: Upload to Firebase
-            const imageUrl = await uploadImageToFirebase(file, id);
+            const imageUrl = await uploadImageToFirebase(selectedFile, id);
             
             // Step 2: Send URL to backend to save in database
             const response = await API.post(`/products/uploadImage/${id}`, {
@@ -91,25 +116,36 @@ const EditProduct = () => {
             if (response.data.images) {
                 setImages(response.data.images);
                 toast.success("Image uploaded successfully!");
+                setSelectedFile(null);
+                if (filePreview) URL.revokeObjectURL(filePreview);
+                setFilePreview(null);
             }
         } catch (error) {
             console.error("Error uploading image:", error);
             toast.error(error.message || "Failed to upload image.");
         } finally {
             setUploadingImage(false);
-            e.target.value = ""; // Reset file input
         }
     };
 
-    const handleDeleteImage = async (imageUrl) => {
+    const confirmDelete = (imageUrl) => {
+        setImageToDelete(imageUrl);
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteImage = async () => {
+        if (!imageToDelete) return;
+        
         try {
             const response = await API.delete(`/products/deleteImage/${id}`, {
-                data: { imageUrl }
+                data: { imageUrl: imageToDelete }
             });
 
             if (response.data.images) {
                 setImages(response.data.images);
                 toast.success("Image deleted successfully!");
+                setShowDeleteModal(false);
+                setImageToDelete(null);
             }
         } catch (error) {
             console.error("Error deleting image:", error);
@@ -122,13 +158,12 @@ const EditProduct = () => {
         setLoading(true);
 
         try {
-            // Include images in the update
+            // Only send form data (backend updateProduct doesn't handle images)
             const dataToSubmit = {
-                ...formData,
-                images: images
+                ...formData
             };
 
-            await API.put(`/products/updateProduct/${id}`, dataToSubmit);
+            await API.put(`/products/update/${id}`, dataToSubmit);
             toast.success("Product updated successfully");
             navigate("/products");
         } catch (error) {
@@ -160,25 +195,54 @@ const EditProduct = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Price (₹)</label>
+                        <label>Slug (Short Name)</label>
+                        <input
+                            type="text"
+                            name="slug"
+                            value={formData.slug}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>MRP Price (₹)</label>
                         <input
                             type="number"
-                            name="price"
-                            value={formData.price}
+                            name="productprice"
+                            value={formData.productprice}
                             onChange={handleChange}
                             required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Discount (%)</label>
+                        <label>Discount (Amount)</label>
                         <input
                             type="number"
-                            name="discount"
-                            value={formData.discount}
+                            name="discountvalue"
+                            value={formData.discountvalue}
                             onChange={handleChange}
                             min="0"
-                            max="100"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>GST Percentage (%)</label>
+                        <input
+                            type="number"
+                            name="gstpercentage"
+                            value={formData.gstpercentage}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>HSN Code</label>
+                        <input
+                            type="text"
+                            name="hsncode"
+                            value={formData.hsncode}
+                            onChange={handleChange}
                         />
                     </div>
 
@@ -194,6 +258,24 @@ const EditProduct = () => {
                     </div>
 
                     <div className="form-group">
+                        <label>Unit (e.g. pcs, kg, ltr)</label>
+                        <select
+                            name="unit"
+                            value={formData.unit}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select Unit</option>
+                            <option value="pcs">pcs</option>
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="ltr">ltr</option>
+                            <option value="ml">ml</option>
+                            <option value="packet">packet</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
                         <label>Category</label>
                         <select
                             name="category"
@@ -203,8 +285,6 @@ const EditProduct = () => {
                         >
                             <option value="veg">Veg</option>
                             <option value="non-veg">Non-Veg</option>
-                            <option value="spices">Spices</option>
-                            <option value="grains">Grains</option>
                         </select>
                     </div>
                 </div>
@@ -259,15 +339,15 @@ const EditProduct = () => {
                     {images.length > 0 && (
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "15px", marginBottom: "20px" }}>
                             {images.map((imageUrl, index) => (
-                                <div key={index} className="preview-box" style={{ position: "relative", border: "1px solid #ddd", borderRadius: "8px", overflow: "hidden" }}>
+                                <div key={index} className="preview-box" style={{ position: "relative", border: "1px solid #ddd", borderRadius: "8px", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                                     <img
                                         src={imageUrl}
                                         alt={`Product ${index + 1}`}
-                                        style={{ width: "250px", height: "auto", }}
+                                        style={{ width: "100%", height: "150px", objectFit: 'cover' }}
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => handleDeleteImage(imageUrl)}
+                                        onClick={() => confirmDelete(imageUrl)}
                                         className="remove-btn"
                                         style={{
                                             position: "absolute",
@@ -277,10 +357,10 @@ const EditProduct = () => {
                                             color: "white",
                                             border: "none",
                                             borderRadius: "50%",
-                                            width: "30px",
-                                            height: "30px",
+                                            width: "25px",
+                                            height: "25px",
                                             cursor: "pointer",
-                                            fontSize: "18px"
+                                            fontSize: "16px"
                                         }}
                                     >
                                         ×
@@ -290,48 +370,71 @@ const EditProduct = () => {
                         </div>
                     )}
 
-                    {/* Add image button - show only if less than 5 images */}
+                    {/* Add image button */}
                     {images.length < 5 && (
-                        <div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                id="file-upload-edit"
-                                hidden
-                                disabled={uploadingImage}
-                            />
-                            <label
-                                htmlFor="file-upload-edit"
-                                style={{
-                                    display: "inline-block",
-                                    padding: "15px 30px",
-                                    backgroundColor: "#4CAF50",
-                                    color: "white",
-                                    borderRadius: "5px",
-                                    cursor: uploadingImage ? "not-allowed" : "pointer",
-                                    opacity: uploadingImage ? 0.6 : 1,
-                                    fontWeight: "bold"
-                                }}
-                            >
-                                {uploadingImage ? "Uploading..." : "+ Add Image"}
-                            </label>
-                            <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+                        <div className="upload-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    id="file-upload-edit"
+                                    hidden
+                                />
+                                <label
+                                    htmlFor="file-upload-edit"
+                                    style={{
+                                        display: "inline-block",
+                                        padding: "10px 20px",
+                                        backgroundColor: "#f0f0f0",
+                                        color: "#333",
+                                        borderRadius: "5px",
+                                        cursor: "pointer",
+                                        border: '1px solid #ccc',
+                                        fontWeight: "500"
+                                    }}
+                                >
+                                    {selectedFile ? "Change Selection" : "Select Image"}
+                                </label>
+
+                                {selectedFile && (
+                                    <button
+                                        type="button"
+                                        onClick={handleImageUpload}
+                                        disabled={uploadingImage}
+                                        style={{
+                                            padding: "10px 20px",
+                                            backgroundColor: "#4CAF50",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "5px",
+                                            cursor: uploadingImage ? "not-allowed" : "pointer",
+                                            opacity: uploadingImage ? 0.6 : 1,
+                                            fontWeight: "bold"
+                                        }}
+                                    >
+                                        {uploadingImage ? "Uploading..." : "Upload Image"}
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {filePreview && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Selected Preview:</p>
+                                    <img src={filePreview} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '5px' }} />
+                                </div>
+                            )}
+
+                            <p style={{ fontSize: "12px", color: "#666" }}>
                                 {images.length}/5 images uploaded
                             </p>
                         </div>
                     )}
-
-                    {images.length >= 5 && (
-                        <p style={{ color: "green", fontWeight: "bold" }}>
-                            ✓ All 5 images uploaded
-                        </p>
-                    )}
                 </div>
 
-                <div className="form-actions" style={{ display: 'flex', gap: '15px' }}>
+                <div className="form-actions" style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
                     <button type="submit" className="submit-btn" disabled={loading} style={{ flex: 1 }}>
-                        {loading ? "Updating..." : "Update Product"}
+                        {loading ? "Saving..." : "Save Content"}
                     </button>
                     <button
                         type="button"
@@ -339,10 +442,62 @@ const EditProduct = () => {
                         onClick={() => navigate('/products')}
                         style={{ flex: 1, backgroundColor: '#6c757d', borderColor: '#6c757d' }}
                     >
-                        Cancel
+                        Back to List
                     </button>
                 </div>
             </form>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '30px',
+                        borderRadius: '15px',
+                        maxWidth: '400px',
+                        width: '90%',
+                        textAlign: 'center',
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+                    }}>
+                        <h3 style={{ marginBottom: '15px' }}>Confirm Delete</h3>
+                        <p style={{ marginBottom: '20px', color: '#666' }}>Are you sure you want to delete this image?</p>
+                        
+                        {imageToDelete && (
+                            <img 
+                                src={imageToDelete} 
+                                alt="To delete" 
+                                style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', marginBottom: '20px', borderRadius: '8px' }} 
+                            />
+                        )}
+                        
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                            <button 
+                                onClick={handleDeleteImage}
+                                style={{ padding: '10px 25px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                Yes, Delete
+                            </button>
+                            <button 
+                                onClick={() => { setShowDeleteModal(false); setImageToDelete(null); }}
+                                style={{ padding: '10px 25px', backgroundColor: '#eee', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

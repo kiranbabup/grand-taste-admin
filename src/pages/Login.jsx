@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import "./Login.css";
 import foodIllustration from "../assets/premium_food_admin_bg.png";
 import { login } from "../services/authService";
+import LsService from "../services/localstorage";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -17,6 +18,14 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (LsService.getCurrentUser()) {
+            navigate("/dashboard");
+        } else {
+            navigate("/");
+        }
+    }, []);
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -27,14 +36,12 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
             const data = await login(formData);
             toast.success("Logged in successfully!");
-            
             // Redirect based on role
-            if (data.role === "admin" || data.role === "superadmin") {
-                navigate("/super-admin");
+            if (data.role === "admin" || data.role === "superadmin" || data.role === "supervisor") {
+                navigate("/dashboard");
             } else {
                 navigate("/");
             }

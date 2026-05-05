@@ -14,7 +14,7 @@ import {
   Line,
   CartesianGrid
 } from "recharts";
-import { getAllAdmins, getAllSupervisors, getAllEmployees, getAllCustomers, getMonthlyIncome } from "../services/adminService";
+import { getAllAdmins, getMonthlyIncome, getAllStaffByRole } from "../services/adminService";
 
 const Dashboard = () => {
   const [admins, setAdmins] = useState([]);
@@ -31,9 +31,9 @@ const Dashboard = () => {
     try {
       const [adminRes, supervisorRes, employeeRes, customerRes, incomeRes] = await Promise.all([
         getAllAdmins(),
-        getAllSupervisors(),
-        getAllEmployees(),
-        getAllCustomers(),
+        getAllStaffByRole("supervisor"),
+        getAllStaffByRole("employee"),
+        getAllStaffByRole("customer"),
         getMonthlyIncome()
       ]);
 

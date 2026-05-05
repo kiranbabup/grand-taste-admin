@@ -1,4 +1,5 @@
 import API from "./api";
+import LsService from "./localstorage";
 
 /**
  * Register a new user
@@ -21,10 +22,9 @@ export const register = async (userData) => {
  */
 export const login = async (credentials) => {
   try {
-    const response = await API.post("/users/login", credentials);
+    const response = await API.post("/users/loginWebsite", credentials);
     if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      LsService.setCurrentUser(response.data);
     }
     return response.data;
   } catch (error) {
@@ -41,8 +41,7 @@ export const googleAuth = async (idToken) => {
   try {
     const response = await API.post("/users/google", { idToken });
     if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      LsService.setCurrentUser(response.data);
     }
     return response.data;
   } catch (error) {
@@ -53,7 +52,6 @@ export const googleAuth = async (idToken) => {
 /**
  * Logout user
  */
-export const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+export const logoutUser = () => {
+  LsService.removeCurrentUser();
 };

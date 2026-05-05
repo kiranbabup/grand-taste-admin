@@ -60,7 +60,7 @@ body {
   width: 250px;
   /* background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%); */
   color: white;
-  padding: 30px 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
@@ -424,13 +424,13 @@ body {
   display: none;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
+  /* margin-bottom: 35px; */
 }
 
 .close-sidebar {
   background: none;
   border: none;
-  color: white;
+  color: black;
   font-size: 34px;
   cursor: pointer;
   transition: transform 0.3s;
@@ -486,6 +486,7 @@ body {
 
   .sidebar-header {
     display: flex;
+    flex-direction: column;
   }
 
   .sidebar>h2 {

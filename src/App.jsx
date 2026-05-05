@@ -1,37 +1,39 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import LsService from "./services/localstorage";
+import "./App.css";
+import { getAllStaffByRole } from "./services/adminService";
+
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Admins from "./pages/Admins";
+import UserDetails from "./pages/UserDetails";
+import RegisterAdmin from "./pages/RegisterAdmin";
+import Staff from "./pages/Staff";
 import CreateProduct from "./pages/CreateProduct";
 import Products from "./pages/Products";
 import EditProduct from "./pages/EditProduct";
-import Admins from "./pages/Admins";
-import Supervisors from "./pages/Supervisors";
-import Employees from "./pages/Employees";
-import Customers from "./pages/Customers";
-import RegisterAdmin from "./pages/RegisterAdmin";
-import Login from "./pages/Login";
-import UserDetails from "./pages/UserDetails";
-import "./App.css";
-import Orders from "./pages/Orders";
+// import Orders from "./pages/Orders";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
+  const user = LsService.getCurrentUser();
+  if (!user) {
     return <Navigate to="/" replace />;
   }
   return children;
 };
 
 function App() {
-  const token = localStorage.getItem("token");
-
   return (
-    <Router>
+    <BrowserRouter>
       <Toaster position="top-center" />
       <Routes>
+        {/* public routes */}
         <Route path="/" element={<Login />} />
+
+        {/* protected routes */}
         <Route
           path="/*"
           element={
@@ -43,17 +45,20 @@ function App() {
                   <div className="main">
                     <div className="content">
                       <Routes>
-                        <Route path="/super-admin" element={<Dashboard />} />
-                        <Route path="/register-admin" element={<RegisterAdmin />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+
                         <Route path="/admins" element={<Admins />} />
                         <Route path="/user/:userId" element={<UserDetails />} />
-                        <Route path="/supervisors" element={<Supervisors />} />
-                        <Route path="/employees" element={<Employees />} />
-                        <Route path="/customers" element={<Customers />} />
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/edit-product/:id" element={<EditProduct />} />
+                        {/* <Route path="/register-admin" element={<RegisterAdmin />} /> */}
+
+                        <Route path="/supervisors" element={<Staff functionalWord={getAllStaffByRole} roleWord="supervisor" />} />
+                        <Route path="/employees" element={<Staff functionalWord={getAllStaffByRole} roleWord="employee" />} />
+                        <Route path="/customers" element={<Staff functionalWord={getAllStaffByRole} roleWord="customer" />} />
                         <Route path="/CreateProducts" element={<CreateProduct />} />
-                        <Route path="/orders" element={<Orders />} />
+                        <Route path="/edit-product/:id" element={<EditProduct />} />
+                        <Route path="/products" element={<Products />} />
+                        {/* 
+                        <Route path="/orders" element={<Orders />} /> */}
                       </Routes>
                     </div>
                   </div>
@@ -63,7 +68,7 @@ function App() {
           }
         />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 

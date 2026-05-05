@@ -3,11 +3,13 @@ import toast from "react-hot-toast";
 import { getAllSupervisors } from "../services/adminService";
 import { updateUserById } from "../services/userService";
 import UserTable from "../components/UserTable";
+import { useNavigate } from "react-router-dom";
 
 const Supervisors = () => {
     const [supervisors, setSupervisors] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchSupervisors(currentPage);
@@ -44,10 +46,10 @@ const Supervisors = () => {
     return (
         <div className="users-page">
             <h2 style={{ color: "black" }}>Supervisors</h2>
-            <UserTable 
-                users={supervisors} 
-                onToggleStatus={toggleUserStatus} 
-                type="supervisor" 
+            <UserTable
+                users={supervisors}
+                onToggleStatus={toggleUserStatus}
+                type="supervisor"
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}

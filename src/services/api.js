@@ -1,4 +1,5 @@
 import axios from "axios";
+import LsService from "./localstorage";
 
 const API = axios.create({
   // baseURL: "https://single-vendor-e-commerce-node.onrender.com/api",
@@ -7,7 +8,10 @@ const API = axios.create({
 });
 
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const user = LsService.getCurrentUser();
+  const token = user?.token;
+  console.log(token);
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -18,7 +18,7 @@ const Admins = () => {
   const fetchAdmins = async (page) => {
     try {
       const data = await getAllAdmins(page);
-      setAdmins(data.data);
+      setAdmins(data.users);
       setTotalPages(data.totalPages);
     } catch (error) {
       toast.error("Failed to fetch admins");
@@ -47,14 +47,14 @@ const Admins = () => {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2 style={{ color: "black", margin: 0 }}>Admins</h2>
-        <button 
+        <button
           onClick={() => navigate("/register-admin")}
-          style={{ 
-            backgroundColor: "#6C5CE7", 
-            color: "white", 
-            padding: "10px 20px", 
-            border: "none", 
-            borderRadius: "8px", 
+          style={{
+            backgroundColor: "#6C5CE7",
+            color: "white",
+            padding: "10px 20px",
+            border: "none",
+            borderRadius: "8px",
             cursor: "pointer",
             fontWeight: "600"
           }}
@@ -62,10 +62,10 @@ const Admins = () => {
           + Add Admin
         </button>
       </div>
-      <UserTable 
-        users={admins} 
-        onToggleStatus={toggleUserStatus} 
-        type="admin" 
+      <UserTable
+        users={admins}
+        onToggleStatus={toggleUserStatus}
+        type="admin"
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
