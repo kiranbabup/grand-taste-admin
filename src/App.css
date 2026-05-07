@@ -66,6 +66,21 @@ body {
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
   z-index: 10;
   animation: fadeIn 0.8s ease;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 

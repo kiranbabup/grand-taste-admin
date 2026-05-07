@@ -66,17 +66,57 @@ const Sidebar = () => {
             >
               Orders
             </Link>
+            <Link
+              to="/notifications"
+              onClick={closeSidebar}
+              className={location.pathname === "/notifications" ? "active" : ""}
+            >
+              Notifications
+            </Link>
           </>
         )}
 
         {userRole === "superadmin" && (
-          <Link
-            to="/admins"
-            onClick={closeSidebar}
-            className={location.pathname === "/admins" ? "active" : ""}
-          >
-            Admins
-          </Link>
+          <>
+            <Link
+              to="/products"
+              onClick={closeSidebar}
+              className={location.pathname === "/products" ? "active" : ""}
+            >
+              Products
+            </Link>
+            <Link
+              to="/CreateProducts"
+              onClick={closeSidebar}
+              className={location.pathname === "/CreateProducts" ? "active" : ""}
+            >
+              Create Product
+            </Link>
+
+            <Link
+              to="/customer-wishlist"
+              onClick={closeSidebar}
+              className={location.pathname === "/customer-wishlist" ? "active" : ""}
+            >
+              Customer Wish List
+            </Link>
+
+            <Link
+              to="/payments"
+              onClick={closeSidebar}
+              className={location.pathname === "/payments" ? "active" : ""}
+            >
+              Payments
+            </Link>
+
+            <Link
+              to="/admins"
+              onClick={closeSidebar}
+              className={location.pathname === "/admins" ? "active" : ""}
+            >
+              Admins
+            </Link>
+          </>
         )}
 
         {["superadmin", "admin"].includes(userRole) && (
@@ -108,29 +148,12 @@ const Sidebar = () => {
           </>
         )}
 
-        {userRole === "superadmin" && (
-          <>
-            <Link
-              to="/products"
-              onClick={closeSidebar}
-              className={location.pathname === "/products" ? "active" : ""}
-            >
-              Products
-            </Link>
-            <Link
-              to="/CreateProducts"
-              onClick={closeSidebar}
-              className={location.pathname === "/CreateProducts" ? "active" : ""}
-            >
-              Create Product
-            </Link>
-          </>
-        )}
 
         <div
           style={{
             marginTop: "auto",
-            padding: "20px",
+            // padding: "20px",
+            paddingBottom: "70px",
             borderTop: "1px solid #e5e5e5",
           }}
         >
@@ -148,8 +171,8 @@ const Sidebar = () => {
               fontSize: "12px",
               letterSpacing: "1px",
               color: "#999",
-              marginLeft: "20px",
               marginBottom: "6px",
+              marginLeft: "20px",
             }}
           >
             POWERED BY

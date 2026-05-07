@@ -17,6 +17,9 @@ import Products from "./pages/Products";
 import EditProduct from "./pages/EditProduct";
 import ProductDetails from "./pages/ProductDetails";
 import Orders from "./pages/Orders";
+import WishlistTable from "./pages/superadminPages/WishlistTable";
+import NotificationCenter from "./pages/NotificationCenter";
+import PaymentsTable from "./pages/superadminPages/PaymentsTable";
 
 const ProtectedRoute = ({ children }) => {
   const user = LsService.getCurrentUser();
@@ -60,6 +63,9 @@ function App() {
                         <Route path="/products" element={<Products />} />
                         <Route path="/product/:productId" element={<ProductDetails />} />
                         <Route path="/orders" element={<Orders />} />
+                        <Route path="/customer-wishlist" element={<WishlistTable />} />
+                        <Route path="/payments" element={<PaymentsTable />} />
+                        <Route path="/notifications" element={<NotificationCenter />} />
                       </Routes>
                     </div>
                   </div>

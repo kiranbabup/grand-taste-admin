@@ -4,8 +4,8 @@ import toast from "react-hot-toast";
 import API from "../services/api";
 import "./Products.css";
 import ImageModal from "../components/ImageModal";
-import { IconButton } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
+import { Visibility, Search } from "@mui/icons-material";
+import { IconButton, Pagination, InputAdornment, TextField, Box, Typography, FormControl, Select, MenuItem } from "@mui/material";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -15,25 +15,38 @@ const Products = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (searchQuery) {
       const delayDebounceFn = setTimeout(() => {
-        fetchSearchProducts(searchQuery, 1);
+        fetchSearchProducts(searchQuery, currentPage);
       }, 500);
       return () => clearTimeout(delayDebounceFn);
     } else {
       fetchProducts(currentPage);
     }
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, rowsPerPage]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(parseInt(e.target.value, 10));
+    setCurrentPage(1);
+  };
 
   const fetchProducts = async (page) => {
     setLoading(true);
     try {
-      const res = await API.get(`/products/admin/all?page=${page}&limit=10`);
+      const res = await API.get(`/products/admin/all?page=${page}&limit=${rowsPerPage}`);
       setProducts(res.data.products || []);
       setTotalPages(res.data.totalPages || 1);
+      setTotalItems(res.data.totalItems || 0);
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch products");
@@ -46,10 +59,11 @@ const Products = () => {
     setLoading(true);
     try {
       const res = await API.get(
-        `/products/admin/search/${query}?page=${page}&limit=10`,
+        `/products/admin/search/${query}?page=${page}&limit=${rowsPerPage}`,
       );
       setProducts(res.data.products || []);
       setTotalPages(res.data.totalPages || 1);
+      setTotalItems(res.data.totalItems || 0);
       setCurrentPage(page);
     } catch (error) {
       console.error(error);
@@ -91,12 +105,26 @@ const Products = () => {
             + Add Product
           </button>
         </div>
-        <input
-          type="text"
+        <TextField
+          variant="outlined"
+          size="small"
           placeholder="Search products..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-input"
+          onChange={handleSearchChange}
+          sx={{
+            width: "300px",
+            backgroundColor: "white",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+            }
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
         />
       </div>
 
@@ -242,50 +270,72 @@ const Products = () => {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div
-          className="pagination"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "20px",
-            gap: "15px",
-          }}
-        >
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "8px",
-              border: "1px solid #dfe6e9",
-              backgroundColor: currentPage === 1 ? "#f5f6fa" : "white",
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              color: "black",
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "30px",
+          padding: "20px 0",
+          flexWrap: "wrap",
+          gap: "15px",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Typography variant="body2" sx={{ color: "#636e72", fontWeight: 500 }}>
+            Rows per page:
+          </Typography>
+          <FormControl size="small">
+            <Select
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+              sx={{
+                borderRadius: "8px",
+                minWidth: "70px",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#dfe6e9",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#6C5CE7",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#6C5CE7",
+                },
+              }}
+            >
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </Select>
+          </FormControl>
+          <Typography variant="body2" sx={{ color: "#b2bec3" }}>
+            {totalItems > 0 && `(${totalItems} total products)`}
+          </Typography>
+        </Box>
+
+        {totalPages > 0 && (
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(e, value) => setCurrentPage(value)}
+            color="primary"
+            shape="rounded"
+            size="large"
+            sx={{
+              "& .MuiPaginationItem-root": {
+                color: "#6C5CE7",
+                "&.Mui-selected": {
+                  backgroundColor: "#6C5CE7",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#5a4ed1",
+                  },
+                },
+              },
             }}
-          >
-            Previous
-          </button>
-          <span style={{ color: "#2d3436", fontWeight: "500" }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "8px",
-              border: "1px solid #dfe6e9",
-              backgroundColor: currentPage === totalPages ? "#f5f6fa" : "white",
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              color: "black",
-            }}
-          >
-            Next
-          </button>
-        </div>
-      )}
+          />
+        )}
+      </Box>
 
       <ImageModal
         open={open}

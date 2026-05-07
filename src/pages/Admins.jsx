@@ -4,20 +4,22 @@ import { useNavigate } from "react-router-dom";
 import { getAllAdmins } from "../services/adminService";
 import { updateUserById } from "../services/userService";
 import UserTable from "../components/UserTable";
+import { FormControl, Select, MenuItem } from "@mui/material";
 
 const Admins = () => {
   const [admins, setAdmins] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchAdmins(currentPage);
-  }, [currentPage]);
+    fetchAdmins(currentPage, rowsPerPage);
+  }, [currentPage, rowsPerPage]);
 
-  const fetchAdmins = async (page) => {
+  const fetchAdmins = async (page, limit) => {
     try {
-      const data = await getAllAdmins(page);
+      const data = await getAllAdmins(page, limit);
       setAdmins(data.users);
       setTotalPages(data.totalPages);
     } catch (error) {
@@ -25,8 +27,11 @@ const Admins = () => {
     }
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handlePageChange = (page) => setCurrentPage(page);
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(parseInt(e.target.value, 10));
+    setCurrentPage(1);
   };
 
   const toggleUserStatus = async (id, currentStatus) => {
@@ -35,7 +40,7 @@ const Admins = () => {
       try {
         await updateUserById(id, { status: newStatus });
         toast.success(`Admin status updated to ${newStatus}`);
-        fetchAdmins(currentPage);
+        fetchAdmins(currentPage, rowsPerPage);
       } catch (error) {
         console.error("Error updating admin status:", error);
         toast.error("Failed to update status");
@@ -56,18 +61,26 @@ const Admins = () => {
             border: "none",
             borderRadius: "8px",
             cursor: "pointer",
-            fontWeight: "600"
+            fontWeight: "600",
           }}
         >
           + Add Admin
         </button>
       </div>
+      <FormControl size="small" style={{ marginBottom: "10px" }}>
+        <Select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={25}>25</MenuItem>
+          <MenuItem value={50}>50</MenuItem>
+        </Select>
+      </FormControl>
       <UserTable
         users={admins}
         onToggleStatus={toggleUserStatus}
         type="admin"
         currentPage={currentPage}
         totalPages={totalPages}
+        rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
       />
     </div>

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Visibility } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 
-const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 1, onPageChange }) => {
+const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 1, rowsPerPage = 10, onPageChange }) => {
   const navigate = useNavigate();
 
   const getReferralLabel = () => {
@@ -26,6 +26,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Name</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Phone</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Status</th>
+              {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Referal Code</th>}
               {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Earnings</th>}
               {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>{getReferralLabel()}</th>}
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Actions</th>
@@ -40,7 +41,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
                   transition: "background-color 0.2s"
                 }}
               >
-                <td style={{ padding: "12px" }}>{(currentPage - 1) * 10 + index + 1}</td>
+                <td style={{ padding: "12px" }}>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                 <td style={{ padding: "12px" }}>{user.name}</td>
                 <td style={{ padding: "12px" }}>{user.phone}</td>
                 <td style={{ padding: "12px" }}>
@@ -55,6 +56,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
                     {user.status || 'active'}
                   </span>
                 </td>
+                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.referalcode || 'null'}</td>}
                 {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>}
                 {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.directReferrals}</td>}
                 <td style={{ padding: "12px", textAlign: "center" }}>
@@ -94,7 +96,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <div className="pagination" style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "20px", gap: "15px" }}>
           <button
             disabled={currentPage === 1}
