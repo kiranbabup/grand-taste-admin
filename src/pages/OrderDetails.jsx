@@ -20,17 +20,38 @@ import {
     CircularProgress
 } from "@mui/material";
 import API from "../services/api";
+import LsService from "../services/localstorage";
+import { formatDate, generateReceipt, handlePrint } from "../components/cashFunctions";
+import billIcon from "../assets/grandtasteLogo.jpeg";
+
+const poweredBy = "KASI NATH FOODS";
+const gstNumber = "37AOSPA7825F2ZP";
+const companyName = "Grand Taste";
 
 const OrderDetails = ({ orderId, open, onClose }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [orderData, setOrderData] = useState(null);
+    const [billIconBase64, setBillIconBase64] = useState("");
+
+    const user = LsService.getCurrentUser();
+    const isSuperAdmin = user?.role === "superadmin";
 
     useEffect(() => {
         if (open && orderId) {
             fetchOrderDetails();
         }
     }, [open, orderId]);
+
+    useEffect(() => {
+        fetch(billIcon)
+            .then((res) => res.blob())
+            .then((blob) => {
+                const reader = new FileReader();
+                reader.onloadend = () => setBillIconBase64(reader.result);
+                reader.readAsDataURL(blob);
+            });
+    }, []);
 
     const fetchOrderDetails = async () => {
         setLoading(true);
@@ -50,18 +71,6 @@ const OrderDetails = ({ orderId, open, onClose }) => {
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        return new Date(dateString).toLocaleString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-        });
-    };
-
     const getStatusColor = (status) => {
         const blue = ["Pending", "Shipped", "Cancel Request", "Return Request", "Return - Approved"];
         const orange = ["Accepted", "Out for Delivery", "Return - Initiated"];
@@ -75,24 +84,37 @@ const OrderDetails = ({ orderId, open, onClose }) => {
         return "#64748b";
     };
 
+    const onPrintReceipt = async (orderDetails) => {
+        console.log(orderDetails);
+        const receiptContent = generateReceipt(
+            billIconBase64,
+            orderDetails,
+            poweredBy,
+            gstNumber,
+            companyName,
+        );
+
+        handlePrint(receiptContent);
+    };
+
     return (
-        <Dialog 
-            open={open} 
-            onClose={onClose} 
-            maxWidth="md" 
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="md"
             fullWidth
             PaperProps={{
                 sx: { borderRadius: "12px" }
             }}
         >
-            <DialogTitle sx={{ bgcolor: "#f8fafc", borderBottom: "1px solid #e2e8f0", py: 2 }}>
+            <DialogTitle sx={{ bgcolor: "#f8fafc", borderBottom: "1px solid #e2e8f0", py: 1 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="h6" fontWeight="700">Order Details: {orderData?.orderId}</Typography>
                     {orderData?.status && (
-                        <Chip 
-                            label={orderData.status} 
-                            size="small" 
-                            sx={{ bgcolor: getStatusColor(orderData.status), color: "white", fontWeight: "700" }} 
+                        <Chip
+                            label={orderData.status}
+                            size="small"
+                            sx={{ bgcolor: getStatusColor(orderData.status), color: "white", fontWeight: "700" }}
                         />
                     )}
                 </Box>
@@ -108,29 +130,42 @@ const OrderDetails = ({ orderId, open, onClose }) => {
                 ) : orderData ? (
                     <Box>
                         {/* Section 1: Customer & Order Overview */}
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={6}>
+                        <Grid container spacing={3} sx={{ my: 1 }}>
+                            {/* <Grid item xs={12} md={6}>
                                 <Typography variant="subtitle2" color="textSecondary" gutterBottom>Customer Details</Typography>
                                 <Typography variant="body1"><strong>Name:</strong> {orderData.User?.name}</Typography>
                                 <Typography variant="body1"><strong>Phone:</strong> {orderData.User?.phone}</Typography>
-                                <Typography variant="body1"><strong>Role:</strong> {orderData.User?.role}</Typography>
+                                <Typography variant="body1"><strong>Pincode:</strong> {orderData.User?.pincode}</Typography>
+                            </Grid> */}
+                            <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>Assigned Employee</Typography>
+                                <Typography variant="body1"><strong>Name:</strong> {orderData.assignedEmployee?.name || "Not Assigned"}</Typography>
+                                <Typography variant="body1"><strong>Phone:</strong> {orderData.assignedEmployee?.phone || "N/A"}</Typography>
+                                <Typography variant="body1"><strong>Referral Code:</strong> {orderData.assignedEmployee?.referalcode || "N/A"}</Typography>
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <Typography variant="subtitle2" color="textSecondary" gutterBottom>Order Info</Typography>
                                 <Typography variant="body1"><strong>Created At:</strong> {formatDate(orderData.createdAt)}</Typography>
                                 <Typography variant="body1"><strong>Payment Method:</strong> {orderData.paymentMethod}</Typography>
                                 <Typography variant="body1">
-                                    <strong>Status:</strong> {orderData.paymentStatus} 
-                                    ({orderData.isPaid ? "Paid" : "Unpaid"})
+                                    <strong>Status:</strong> {orderData.paymentStatus}
+                                    &nbsp;({orderData.isPaid ? "Paid" : "Unpaid"})
                                 </Typography>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>Shipping Address</Typography>
+                                <Typography variant="body1"><strong>Name:</strong> {orderData.shippingAddress?.name}</Typography>
+                                <Typography variant="body1"><strong>Phone:</strong> {orderData.shippingAddress?.phone}</Typography>
+                                <Typography variant="body1"><strong>Address:</strong> {orderData.shippingAddress?.h_no}, {orderData.shippingAddress?.city}, {orderData.shippingAddress?.landmark}</Typography>
+                                <Typography variant="body2">{orderData.shippingAddress?.street}, {orderData.shippingAddress?.state} - {orderData.shippingAddress?.pincode}</Typography>
                             </Grid>
                         </Grid>
 
-                        <Divider sx={{ mb: 3 }} />
+                        <Divider sx={{ mb: 1 }} />
 
                         {/* Section 2: Items */}
                         <Typography variant="subtitle1" fontWeight="700" gutterBottom>Order Items</Typography>
-                        <TableContainer component={Paper} variant="outlined" sx={{ mb: 3, borderRadius: "8px", overflow: "hidden" }}>
+                        <TableContainer component={Paper} variant="outlined" sx={{ mb: 1, borderRadius: "8px", overflow: "hidden" }}>
                             <Table size="small">
                                 <TableHead sx={{ bgcolor: "#f1f5f9" }}>
                                     <TableRow>
@@ -146,7 +181,7 @@ const OrderDetails = ({ orderId, open, onClose }) => {
                                         <TableRow key={idx}>
                                             <TableCell>
                                                 <Typography variant="body2" fontWeight="600">{item.productname}</Typography>
-                                                <Typography variant="caption" color="textSecondary">{item.category}</Typography>
+                                                <Typography variant="caption" color="textSecondary"><b>HSN:</b> {item.hsncode} <b style={{ color: "black" }}>/</b> {item.category} </Typography>
                                             </TableCell>
                                             <TableCell align="center">₹{item.productprice}</TableCell>
                                             <TableCell align="center">₹{item.sellingPrice}</TableCell>
@@ -159,41 +194,38 @@ const OrderDetails = ({ orderId, open, onClose }) => {
                         </TableContainer>
 
                         {/* Section 3: Earnings & Summary */}
-                        <Grid container spacing={3} sx={{ mb: 3 }}>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="subtitle2" color="textSecondary" gutterBottom>Earnings Distribution</Typography>
-                                <Typography variant="body2"><strong>Employee:</strong> ₹{orderData.totalEmployeeEarning}</Typography>
-                                <Typography variant="body2"><strong>Supervisor:</strong> ₹{orderData.totalSupervisorEarning}</Typography>
-                                <Typography variant="body2"><strong>Admin:</strong> ₹{orderData.totalAdminEarning}</Typography>
-                            </Grid>
+                        <Grid container spacing={3} sx={{ display: "flex", justifyContent: isSuperAdmin ? "space-between" : "flex-end" }}>
+                            {
+                                isSuperAdmin && (
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle2" color="textSecondary" gutterBottom>Earnings Distribution</Typography>
+                                        <Typography variant="body2"><strong>Employee:</strong> ₹{orderData.totalEmployeeEarning}</Typography>
+                                        <Typography variant="body2"><strong>Supervisor:</strong> ₹{orderData.totalSupervisorEarning}</Typography>
+                                        <Typography variant="body2"><strong>Admin:</strong> ₹{orderData.totalAdminEarning}</Typography>
+                                    </Grid>
+                                )}
                             <Grid item xs={12} md={6} sx={{ textAlign: "right" }}>
                                 <Typography variant="subtitle2" color="textSecondary" gutterBottom>Order Summary</Typography>
-                                <Typography variant="body2"><strong>GST Amount:</strong> ₹{orderData.totalGstAmount}</Typography>
+                                <Typography variant="body2"><strong>Inclusive GST Amount:</strong> ₹{orderData.totalGstAmount}</Typography>
                                 <Typography variant="h6" sx={{ mt: 1, color: "#0f766e" }}>
-                                    <strong>Total Price:</strong> ₹{Number(orderData.totalPrice).toFixed(2)}
+                                    <strong>Total Bill Price:</strong> ₹{Number(orderData.totalPrice).toFixed(2)}
                                 </Typography>
                             </Grid>
                         </Grid>
-
-                        <Divider sx={{ mb: 3 }} />
-
-                        {/* Section 4: Shipping Address */}
-                        <Typography variant="subtitle1" fontWeight="700" gutterBottom>Shipping Address</Typography>
-                        <Box sx={{ p: 2, bgcolor: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-                            <Typography variant="body2"><strong>Name:</strong> {orderData.shippingAddress?.name}</Typography>
-                            <Typography variant="body2"><strong>Phone:</strong> {orderData.shippingAddress?.phone}</Typography>
-                            <Typography variant="body2">
-                                <strong>Address:</strong> {orderData.shippingAddress?.h_no}, {orderData.shippingAddress?.street}, {orderData.shippingAddress?.landmark}
-                            </Typography>
-                            <Typography variant="body2">
-                                {orderData.shippingAddress?.city}, {orderData.shippingAddress?.state} - {orderData.shippingAddress?.deliveryPincode}
-                            </Typography>
-                        </Box>
                     </Box>
                 ) : null}
             </DialogContent>
 
             <DialogActions sx={{ p: 2, borderTop: "1px solid #e2e8f0" }}>
+                {(orderData?.status !== "Rejected" && orderData?.status !== "Cancelled") && (
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => onPrintReceipt(orderData)}
+                    >
+                        Print Receipt
+                    </Button>
+                )}
                 <Button onClick={onClose} variant="outlined" color="inherit" sx={{ borderRadius: "8px", textTransform: "none" }}>
                     Close
                 </Button>

@@ -36,8 +36,6 @@ const Orders = () => {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-
-
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData && userData !== "undefined") {
@@ -342,6 +340,7 @@ const Orders = () => {
                 <Box sx={{ flex: 1 }}>{order.isPaid ? "Paid" : "Pending"}</Box>
                 <Box sx={{ flex: 2, display: "flex", justifyContent: "center" }}>
                   <IconButton
+                  sx={{mr:2}}
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -425,7 +424,7 @@ const Orders = () => {
         onRowsPerPageChange={handleChangeRowsPerPage}
         sx={{ mt: 2, border: "none" }}
       />
-      <OrderDetails 
+      <OrderDetails
         orderId={selectedOrderId} 
         open={orderModalOpen} 
         onClose={() => {
