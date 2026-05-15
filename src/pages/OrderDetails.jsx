@@ -111,11 +111,14 @@ const OrderDetails = ({ orderId, open, onClose }) => {
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="h6" fontWeight="700">Order Details: {orderData?.orderId}</Typography>
                     {orderData?.status && (
-                        <Chip
-                            label={orderData.status}
-                            size="small"
-                            sx={{ bgcolor: getStatusColor(orderData.status), color: "white", fontWeight: "700" }}
-                        />
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                            <Typography variant="subtitle2" color="textSecondary" gutterBottom>Delivery Status:</Typography>
+                            <Chip
+                                label={orderData.status}
+                                size="small"
+                                sx={{ bgcolor: getStatusColor(orderData.status), color: "white", fontWeight: "700" }}
+                            />
+                        </Box>
                     )}
                 </Box>
             </DialogTitle>

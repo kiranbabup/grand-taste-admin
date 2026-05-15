@@ -100,17 +100,17 @@ export const generateReceipt = (logo, orderData, poweredBy, gstNumber, companyNa
             <!-- Summary Section -->
             <div style="display: flex; justify-content: space-between;">
                 <div style="width: 350px;">
-                    <div style="display: flex; justify-content: start; gap: 15px; margin-bottom: 12px; font-size: 15px;">
+                    <div style="display: flex; justify-content: start; gap: 15px; margin-bottom: 8px; font-size: 15px;">
                         <span style="color: #64748b; font-weight: 600;">Total Items:</span>
                         <span style="font-weight: 700;">${orderData?.orderItems.length}</span>
                     </div>
-                    <div style="display: flex; justify-content: start; gap: 15px; margin-bottom: 12px; font-size: 15px;">
+                    <div style="display: flex; justify-content: start; gap: 15px; font-size: 15px;">
                         <span style="color: #64748b; font-weight: 600;">Total Quantity:</span>
                         <span style="font-weight: 700;">${orderData?.totalQty || orderData?.orderItems.reduce((acc, i) => acc + i.qty, 0)}</span>
                     </div>
                 </div>
-                <div style="width: 350px; padding: 10px; border-radius: 12px; border: 2px solid #0f766e;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px;">
+                <div style="width: 350px; padding: 8px; border-radius: 12px; border: 2px solid #0f766e;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;">
                         <span style="color: #64748b; font-weight: 600;">Total Tax (GST):</span>
                         <span style="font-weight: 700;">₹${parseFloat(orderData?.totalGstAmount).toFixed(2)}</span>
                     </div>

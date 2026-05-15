@@ -114,6 +114,8 @@ const PaymentsTable = () => {
             <Table sx={{ minWidth: 1000 }}>
               <TableHead sx={{ bgcolor: "#f0f2f5" }}>
                 <TableRow>
+                  <TableCell sx={{ fontWeight: 700, py: 2, }}>S. No</TableCell>
+                  <TableCell sx={{ fontWeight: 700, py: 2 }}>Date</TableCell>
                   <TableCell sx={{ fontWeight: 700, py: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PersonOutline fontSize="small" /> User Details
@@ -141,7 +143,7 @@ const PaymentsTable = () => {
               </TableHead>
               <TableBody>
                 {data.length > 0 ? (
-                  data.map((item) => {
+                  data.map((item, index) => {
                     const statusStyle = getStatusColor(item.status);
                     return (
                       <TableRow
@@ -149,6 +151,8 @@ const PaymentsTable = () => {
                         hover
                         sx={{ '&:last-child td, &:last-child th': { border: 0 }, transition: "0.2s", '&:hover': { bgcolor: "rgba(26, 35, 126, 0.02)" } }}
                       >
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item.createdAt}</TableCell>
                         <TableCell>
                           <Box sx={{ display: "flex", flexDirection: "column" }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#2c3e50" }}>
@@ -160,9 +164,9 @@ const PaymentsTable = () => {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={item.role || item.user?.role || "N/A"} 
-                            size="small" 
+                          <Chip
+                            label={item.role || item.user?.role || "N/A"}
+                            size="small"
                             variant="outlined"
                             sx={{ textTransform: "capitalize", fontSize: "0.75rem" }}
                           />
