@@ -1,3 +1,4 @@
+// Orders.jsx
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -20,7 +21,12 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import toast from "react-hot-toast";
-import { getAllOrders, searchByPhone, staffUpdateOrderStatus, superadminUpdateOrderStatus } from "../services/orderApis";
+import {
+  getAllOrders,
+  searchByPhone,
+  staffUpdateOrderStatus,
+  superadminUpdateOrderStatus,
+} from "../services/orderApis";
 import { Visibility } from "@mui/icons-material";
 import OrderDetails from "./OrderDetails";
 
@@ -84,7 +90,7 @@ const Orders = () => {
     try {
       const data = await searchByPhone(searchPhone);
       // Search API returns an array directly or { orders: [] }
-      const ordersArray = Array.isArray(data) ? data : (data.orders || []);
+      const ordersArray = Array.isArray(data) ? data : data.orders || [];
       setOrders(ordersArray);
       setTotalItems(ordersArray.length);
       setPage(0);
@@ -98,15 +104,29 @@ const Orders = () => {
 
   const handleStatusUpdate = async (orderId, nextStatus) => {
     try {
-      const superadminStatuses = ["Return - Initiated", "Return - Rejected", "Returned & Refunded"];
+      const superadminStatuses = [
+        "Return - Initiated",
+        "Return - Rejected",
+        "Returned & Refunded",
+      ];
 
+      // Return flow → only superadmin
       if (superadminStatuses.includes(nextStatus)) {
         if (userRole !== "superadmin") {
           toast.error("Only Superadmin can perform this action");
           return;
         }
+
         await superadminUpdateOrderStatus(orderId, nextStatus);
-      } else {
+      }
+
+      // Admin & Superadmin normal actions
+      else if (["admin", "superadmin"].includes(userRole)) {
+        await superadminUpdateOrderStatus(orderId, nextStatus);
+      }
+
+      // Supervisor actions
+      else {
         await staffUpdateOrderStatus(orderId, nextStatus);
       }
 
@@ -114,7 +134,12 @@ const Orders = () => {
       fetchOrders();
     } catch (error) {
       console.error("Error updating status:", error);
-      toast.error(error.message || "Failed to update status");
+
+      toast.error(
+        error?.message ||
+          error?.response?.data?.message ||
+          "Failed to update status",
+      );
     }
   };
 
@@ -129,18 +154,26 @@ const Orders = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }).replace(",", "");
+    return date
+      .toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+      .replace(",", "");
   };
 
   const getStatusColor = (status) => {
-    const blue = ["Pending", "Shipped", "Cancel Request", "Return Request", "Return - Approved"];
+    const blue = [
+      "Pending",
+      "Shipped",
+      "Cancel Request",
+      "Return Request",
+      "Return - Approved",
+    ];
     const orange = ["Accepted", "Out for Delivery", "Return - Initiated"];
     const red = ["Rejected", "Cancelled", "Return - Rejected"];
     const green = ["Delivered", "Returned & Refunded"];
@@ -172,7 +205,7 @@ const Orders = () => {
           px: 1.5,
           bgcolor: buttonColor,
           "&:hover": { bgcolor: buttonColor, opacity: 0.9 },
-          ...sx
+          ...sx,
         }}
       >
         {label}
@@ -180,7 +213,14 @@ const Orders = () => {
     );
 
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         <Chip
           label={status}
           size="small"
@@ -189,39 +229,78 @@ const Orders = () => {
             color: "white",
             fontWeight: "700",
             fontSize: "0.7rem",
-            mb: 0.5
+            mb: 0.5,
           }}
         />
 
-        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", justifyContent: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 0.5,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           {status === "Pending" && (
             <>
               {/* Added Accept button as it's implied for the Accepted state to exist */}
-              <ActionButton label="Accept" nextStatus="Accepted" buttonColor="#16a34a" />
-              <ActionButton label="Reject" nextStatus="Rejected" buttonColor="#dc2626" />
+              <ActionButton
+                label="Accept"
+                nextStatus="Accepted"
+                buttonColor="#16a34a"
+              />
+              <ActionButton
+                label="Reject"
+                nextStatus="Rejected"
+                buttonColor="#dc2626"
+              />
             </>
           )}
 
           {status === "Accepted" && (
             <>
-              <ActionButton label="Shipped" nextStatus="Shipped" buttonColor="#2563eb" />
-              <ActionButton label="Reject" nextStatus="Rejected" buttonColor="#dc2626" />
+              <ActionButton
+                label="Shipped"
+                nextStatus="Shipped"
+                buttonColor="#2563eb"
+              />
+              <ActionButton
+                label="Reject"
+                nextStatus="Rejected"
+                buttonColor="#dc2626"
+              />
             </>
           )}
 
           {status === "Cancel Request" && (
-            <ActionButton label="Cancelled" nextStatus="Cancelled" buttonColor="#dc2626" />
+            <ActionButton
+              label="Cancelled"
+              nextStatus="Cancelled"
+              buttonColor="#dc2626"
+            />
           )}
 
           {status === "Return Request" && userRole === "superadmin" && (
             <>
-              <ActionButton label="Return - Initiated" nextStatus="Return - Initiated" buttonColor="#f59e0b" />
-              <ActionButton label="Return - Rejected" nextStatus="Return - Rejected" buttonColor="#dc2626" />
+              <ActionButton
+                label="Return - Initiated"
+                nextStatus="Return - Initiated"
+                buttonColor="#f59e0b"
+              />
+              <ActionButton
+                label="Return - Rejected"
+                nextStatus="Return - Rejected"
+                buttonColor="#dc2626"
+              />
             </>
           )}
 
           {status === "Return - Approved" && userRole === "superadmin" && (
-            <ActionButton label="Returned & Refunded" nextStatus="Returned & Refunded" buttonColor="#16a34a" />
+            <ActionButton
+              label="Returned & Refunded"
+              nextStatus="Returned & Refunded"
+              buttonColor="#16a34a"
+            />
           )}
         </Box>
       </Box>
@@ -230,7 +309,14 @@ const Orders = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "#f8fafc", minHeight: "100vh" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
         <Typography variant="h4" sx={{ fontWeight: "700", color: "#1e293b" }}>
           Orders Management
         </Typography>
@@ -247,13 +333,18 @@ const Orders = () => {
               borderRadius: "8px",
               border: "1px solid #e2e8f0",
               outline: "none",
-              width: "250px"
+              width: "250px",
             }}
           />
           <Button
             variant="contained"
             onClick={handleSearch}
-            sx={{ bgcolor: "#0f766e", "&:hover": { bgcolor: "#0d645d" }, borderRadius: "8px", textTransform: "none" }}
+            sx={{
+              bgcolor: "#0f766e",
+              "&:hover": { bgcolor: "#0d645d" },
+              borderRadius: "8px",
+              textTransform: "none",
+            }}
           >
             Search
           </Button>
@@ -266,7 +357,12 @@ const Orders = () => {
                 setPage(0);
                 fetchOrders();
               }}
-              sx={{ color: "#0f766e", borderColor: "#0f766e", borderRadius: "8px", textTransform: "none" }}
+              sx={{
+                color: "#0f766e",
+                borderColor: "#0f766e",
+                borderRadius: "8px",
+                textTransform: "none",
+              }}
             >
               Clear
             </Button>
@@ -275,16 +371,18 @@ const Orders = () => {
       </Box>
 
       {/* Table Header Wrapper */}
-      <Box sx={{
-        display: "flex",
-        bgcolor: "#0f766e",
-        color: "white",
-        p: 2,
-        borderRadius: "8px 8px 0 0",
-        fontWeight: "600",
-        textAlign: "center",
-        alignItems: "center"
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          bgcolor: "#0f766e",
+          color: "white",
+          p: 2,
+          borderRadius: "8px 8px 0 0",
+          fontWeight: "600",
+          textAlign: "center",
+          alignItems: "center",
+        }}
+      >
         <Box sx={{ width: "48px" }} /> {/* Spacer for Expand Icon */}
         <Box sx={{ flex: 0.5 }}>S No</Box>
         <Box sx={{ flex: 1 }}>Invoice No</Box>
@@ -305,14 +403,24 @@ const Orders = () => {
           <Typography color="textSecondary">No orders found.</Typography>
         </Paper>
       ) : (
-        <Box sx={{ borderRadius: "0 0 8px 8px", overflow: "hidden", border: "1px solid #e2e8f0", borderTop: "none" }}>
+        <Box
+          sx={{
+            borderRadius: "0 0 8px 8px",
+            overflow: "hidden",
+            border: "1px solid #e2e8f0",
+            borderTop: "none",
+          }}
+        >
           {orders.map((order, index) => (
-            <Accordion key={order.id} sx={{
-              boxShadow: "none",
-              borderBottom: "1px solid #e2e8f0",
-              "&:before": { display: "none" },
-              "&.Mui-expanded": { margin: 0 }
-            }}>
+            <Accordion
+              key={order.id}
+              sx={{
+                boxShadow: "none",
+                borderBottom: "1px solid #e2e8f0",
+                "&:before": { display: "none" },
+                "&.Mui-expanded": { margin: 0 },
+              }}
+            >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 component="div"
@@ -326,21 +434,31 @@ const Orders = () => {
                     alignItems: "center",
                     textAlign: "center",
                     margin: "12px 0",
-                    ml: 1
+                    ml: 1,
                   },
-                  px: 2
+                  px: 2,
                 }}
               >
                 <Box sx={{ flex: 0.5 }}>{page * rowsPerPage + index + 1}</Box>
                 <Box sx={{ flex: 1 }}>{order.orderId}</Box>
                 <Box sx={{ flex: 2 }}>{formatDate(order.createdAt)}</Box>
-                <Box sx={{ flex: 1 }}>{order.paymentMethod === "Cash on Delivery" ? "cash" : order.paymentMethod}</Box>
-                <Box sx={{ flex: 1 }}>₹{(order.totalPrice * 0.05).toFixed(2)}</Box>
-                <Box sx={{ flex: 1, fontWeight: "600" }}>₹{Number(order.totalPrice).toFixed(2)}</Box>
+                <Box sx={{ flex: 1 }}>
+                  {order.paymentMethod === "Cash on Delivery"
+                    ? "cash"
+                    : order.paymentMethod}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  ₹{(order.totalPrice * 0.05).toFixed(2)}
+                </Box>
+                <Box sx={{ flex: 1, fontWeight: "600" }}>
+                  ₹{Number(order.totalPrice).toFixed(2)}
+                </Box>
                 <Box sx={{ flex: 1 }}>{order.isPaid ? "Paid" : "Pending"}</Box>
-                <Box sx={{ flex: 2, display: "flex", justifyContent: "center" }}>
+                <Box
+                  sx={{ flex: 2, display: "flex", justifyContent: "center" }}
+                >
                   <IconButton
-                  sx={{mr:2}}
+                    sx={{ mr: 2 }}
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -356,28 +474,76 @@ const Orders = () => {
                 </Box>
               </AccordionSummary>
               <AccordionDetails sx={{ bgcolor: "#f1f5f9", p: 3 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: "700", mb: 2, color: "#334155" }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: "700", mb: 2, color: "#334155" }}
+                >
                   Cart Items
                 </Typography>
-                <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: "8px", overflow: "hidden" }}>
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    boxShadow: "none",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                  }}
+                >
                   <Table size="small">
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#2dd4bf" }}>
-                        <TableCell sx={{ color: "white", fontWeight: "700" }}>Product Name</TableCell>
-                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Item Price</TableCell>
-                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Item Sell Price</TableCell>
-                        <TableCell align="center" sx={{ color: "white", fontWeight: "700" }}>Qty</TableCell>
-                        <TableCell align="right" sx={{ color: "white", fontWeight: "700" }}>Item Total</TableCell>
+                        <TableCell sx={{ color: "white", fontWeight: "700" }}>
+                          Product Name
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{ color: "white", fontWeight: "700" }}
+                        >
+                          Item Price
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{ color: "white", fontWeight: "700" }}
+                        >
+                          Item Sell Price
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{ color: "white", fontWeight: "700" }}
+                        >
+                          Qty
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          sx={{ color: "white", fontWeight: "700" }}
+                        >
+                          Item Total
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {order.orderItems?.map((item) => (
-                        <TableRow key={item.id} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                          <TableCell sx={{ color: "#475569" }}>{item.productname}</TableCell>
-                          <TableCell align="center" sx={{ color: "#475569" }}>{item.productprice}</TableCell>
-                          <TableCell align="center" sx={{ color: "#475569" }}>{item.sellingPrice}</TableCell>
-                          <TableCell align="center" sx={{ color: "#475569" }}>{item.qty}</TableCell>
-                          <TableCell align="right" sx={{ fontWeight: "600", color: "#475569" }}>
+                        <TableRow
+                          key={item.id}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell sx={{ color: "#475569" }}>
+                            {item.productname}
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>
+                            {item.productprice}
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>
+                            {item.sellingPrice}
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "#475569" }}>
+                            {item.qty}
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{ fontWeight: "600", color: "#475569" }}
+                          >
                             ₹{(item.qty * item.sellingPrice).toFixed(2)}
                           </TableCell>
                         </TableRow>
@@ -386,25 +552,46 @@ const Orders = () => {
                   </Table>
                 </TableContainer>
 
-                <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "0.875rem" }}>
+                <Box
+                  sx={{
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    color: "#64748b",
+                    fontSize: "0.875rem",
+                  }}
+                >
                   <Box>
-                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Name</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ display: "block", fontWeight: "700" }}
+                    >
+                      Name
+                    </Typography>
                     <Typography variant="body2">
-                      {order.User?.name || 'N/A'
-                      }
+                      {order.User?.name || "N/A"}
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Shipping Address</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ display: "block", fontWeight: "700" }}
+                    >
+                      Shipping Address
+                    </Typography>
                     <Typography variant="body2">
                       {order.shippingAddress
                         ? `Dr_no: ${order.shippingAddress.h_no}, Street: ${order.shippingAddress.street}, Address: ${order.shippingAddress.address}, Landmark: ${order.shippingAddress.landmark}, City: ${order.shippingAddress.city}, State: ${order.shippingAddress.state}, Pin Code: ${order.shippingAddress.pincode}`
-                        : 'N/A'
-                      }
+                        : "N/A"}
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: "right" }}>
-                    <Typography variant="caption" sx={{ display: "block", fontWeight: "700" }}>Contact</Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ display: "block", fontWeight: "700" }}
+                    >
+                      Contact
+                    </Typography>
                     <Typography variant="body2">{order.phone}</Typography>
                   </Box>
                 </Box>
@@ -425,12 +612,12 @@ const Orders = () => {
         sx={{ mt: 2, border: "none" }}
       />
       <OrderDetails
-        orderId={selectedOrderId} 
-        open={orderModalOpen} 
+        orderId={selectedOrderId}
+        open={orderModalOpen}
         onClose={() => {
           setOrderModalOpen(false);
           setSelectedOrderId(null);
-        }} 
+        }}
       />
     </Box>
   );
