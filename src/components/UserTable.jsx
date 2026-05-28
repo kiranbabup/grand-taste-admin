@@ -4,6 +4,8 @@ import { IconButton } from "@mui/material";
 
 const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 1, rowsPerPage = 10, onPageChange }) => {
   const navigate = useNavigate();
+  console.log(users);
+  
 
   const getReferralLabel = () => {
     if (type === "admin") return "Supervisors";
@@ -27,7 +29,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Phone</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Status</th>
               {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Referal Code</th>}
-              {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Earnings</th>}
+              {/* {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Earnings</th>} */}
               {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>{getReferralLabel()}</th>}
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Actions</th>
             </tr>
@@ -57,7 +59,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
                   </span>
                 </td>
                 {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.referalcode || 'null'}</td>}
-                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>}
+                {/* {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>} */}
                 {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.directReferrals}</td>}
                 <td style={{ padding: "12px", textAlign: "center" }}>
                   <div className="action-buttons" style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>

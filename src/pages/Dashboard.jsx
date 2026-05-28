@@ -133,15 +133,23 @@ const Dashboard = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
-              title="Monthly Income"
+              title="Current Month Income"
               value={`₹${incomeStats.thisMonthIncome.toLocaleString()}`}
               icon={<TrendingUpOutlined />}
               color="#6C5CE7"
               // Subtitle for last month comparison can be added if needed
             />
-            <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary', fontWeight: 500 }}>
+            {/* <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'text.secondary', fontWeight: 500 }}>
               Last Month: ₹{incomeStats.lastMonthIncome.toLocaleString()}
-            </Typography>
+            </Typography> */}
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Last Month Income"
+              value={`₹${incomeStats.lastMonthIncome.toLocaleString()}`}
+              icon={<TrendingUpOutlined />}
+              color="#6C5CE7"
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard

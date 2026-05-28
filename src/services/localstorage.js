@@ -1,5 +1,5 @@
 const days = 1;
-const storageKey = "grnadL";
+export const storageKey = "grnadL";
 
 class LsService {
   ls = window.localStorage;

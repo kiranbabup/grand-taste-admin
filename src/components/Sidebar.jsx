@@ -24,7 +24,10 @@ const Sidebar = () => {
         <button className="hamburger" onClick={toggleSidebar}>
           ☰
         </button>
-        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center", fontWeight: "bold" }}>
+        <Typography
+          variant="h6"
+          sx={{ flexGrow: 1, textAlign: "center", fontWeight: "bold" }}
+        >
           {user?.role.toUpperCase()}
         </Typography>
         <div
@@ -45,9 +48,17 @@ const Sidebar = () => {
       <div className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <Box sx={{ width: "100%", display: "flex", justifyContent: "end" }}>
-            <button className="close-sidebar" onClick={closeSidebar}>×</button>
+            <button className="close-sidebar" onClick={closeSidebar}>
+              ×
+            </button>
           </Box>
-          <h2>{userRole === "superadmin" ? "Super Admin" : userRole === "admin" ? "Admin" : "Supervisor"}</h2>
+          <h2>
+            {userRole === "superadmin"
+              ? "Super Admin"
+              : userRole === "admin"
+                ? "Admin"
+                : "Supervisor"}
+          </h2>
         </div>
 
         {["superadmin", "admin", "supervisor"].includes(userRole) && (
@@ -85,10 +96,13 @@ const Sidebar = () => {
             >
               Products
             </Link>
+
             <Link
               to="/CreateProducts"
               onClick={closeSidebar}
-              className={location.pathname === "/CreateProducts" ? "active" : ""}
+              className={
+                location.pathname === "/CreateProducts" ? "active" : ""
+              }
             >
               Create Product
             </Link>
@@ -96,7 +110,9 @@ const Sidebar = () => {
             <Link
               to="/customer-wishlist"
               onClick={closeSidebar}
-              className={location.pathname === "/customer-wishlist" ? "active" : ""}
+              className={
+                location.pathname === "/customer-wishlist" ? "active" : ""
+              }
             >
               Customer Wish List
             </Link>
@@ -107,6 +123,14 @@ const Sidebar = () => {
               className={location.pathname === "/payments" ? "active" : ""}
             >
               Payments
+            </Link>
+
+            <Link
+              to="/withdraw-requests"
+              onClick={closeSidebar}
+              className={location.pathname === "/withdraw-requests" ? "active" : ""}
+            >
+              Withdraw Requests
             </Link>
 
             <Link
@@ -147,7 +171,6 @@ const Sidebar = () => {
             </Link>
           </>
         )}
-
 
         <div
           style={{

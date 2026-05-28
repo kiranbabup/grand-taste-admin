@@ -29,6 +29,7 @@ import {
 } from "../services/orderApis";
 import { Visibility } from "@mui/icons-material";
 import OrderDetails from "./OrderDetails";
+import LsService,{ storageKey } from "../services/localstorage";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -43,12 +44,11 @@ const Orders = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
+    const userData = LsService.getItem(storageKey);
     if (userData && userData !== "undefined") {
       try {
-        const user = JSON.parse(userData);
-        if (user) {
-          setUserRole(user.role);
+        if (userData) {
+          setUserRole(userData.role);
         }
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
@@ -104,15 +104,19 @@ const Orders = () => {
 
   const handleStatusUpdate = async (orderId, nextStatus) => {
     try {
+      console.log(userRole);
+      
+      const role = (userRole || "").toLowerCase();
+
       const superadminStatuses = [
         "Return - Initiated",
         "Return - Rejected",
         "Returned & Refunded",
       ];
 
-      // Return flow → only superadmin
+      // Return actions → SUPERADMIN only
       if (superadminStatuses.includes(nextStatus)) {
-        if (userRole !== "superadmin") {
+        if (role !== "superadmin") {
           toast.error("Only Superadmin can perform this action");
           return;
         }
@@ -120,24 +124,28 @@ const Orders = () => {
         await superadminUpdateOrderStatus(orderId, nextStatus);
       }
 
-      // Admin & Superadmin normal actions
-      else if (["admin", "superadmin"].includes(userRole)) {
+      // ADMIN + SUPERADMIN
+      else if (role === "admin" || role === "superadmin") {
         await superadminUpdateOrderStatus(orderId, nextStatus);
       }
 
-      // Supervisor actions
-      else {
+      // SUPERVISOR
+      else if (role === "supervisor") {
         await staffUpdateOrderStatus(orderId, nextStatus);
+      } else {
+        toast.error("Unauthorized role");
+        return;
       }
 
       toast.success(`Order status updated to ${nextStatus}`);
-      fetchOrders();
+
+      await fetchOrders();
     } catch (error) {
       console.error("Error updating status:", error);
 
       toast.error(
-        error?.message ||
-          error?.response?.data?.message ||
+        error?.response?.data?.message ||
+          error?.message ||
           "Failed to update status",
       );
     }

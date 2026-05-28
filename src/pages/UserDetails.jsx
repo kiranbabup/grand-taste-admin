@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../services/api";
 import UserTable from "../components/UserTable";
-import { updateUserById, getUserById } from "../services/userService";
+import { updateUserById, updateUserReferral, getUserById } from "../services/userService";
 import { getDownlineMembers } from "../services/adminService";
 import { Box, Typography } from "@mui/material";
 
@@ -13,6 +13,7 @@ const UserDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [newReferedBy, setNewReferedBy] = useState("");
     const [downlineUsersData, setDownlineUsersData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -29,7 +30,8 @@ const UserDetails = () => {
             let userDetails = null;
             if (userData) {
                 userDetails = userData;
-                setUserData(userData)
+                setUserData(userData);
+                setNewReferedBy(userData.referedby || "");
             }
             if (!userDetails) {
                 setError("User not found.");
@@ -75,6 +77,32 @@ const UserDetails = () => {
         }
     };
 
+    const handleReferralUpdate = async () => {
+        if (!newReferedBy.trim()) {
+            toast.error("Referral code cannot be empty.");
+            return;
+        }
+
+        if (!userData?.id) {
+            toast.error("User data not loaded yet.");
+            return;
+        }
+
+        if (newReferedBy === userData.referedby) {
+            toast("Referral code is unchanged.");
+            return;
+        }
+
+        try {
+            await updateUserReferral(userData.id, newReferedBy.trim());
+            toast.success("Referral code updated successfully.");
+            fetchUserDetails();
+        } catch (err) {
+            console.error("Error updating referral code:", err);
+            toast.error(err.message || "Failed to update referral code.");
+        }
+    };
+
     if (loading) return <div style={{ color: "black", padding: "20px" }}>Loading user details...</div>;
     if (error) return <div style={{ color: "red", padding: "20px" }}>{error}</div>;
     if (!userData) return <div style={{ color: "black", padding: "20px" }}>User not found.</div>;
@@ -101,9 +129,53 @@ const UserDetails = () => {
                     <div><strong>email:</strong> {userData?.email || "N/A"}</div>
                     {userData?.role !== "customer" && (
                         <div><strong>Referral Code:</strong> {userData?.referalcode || "N/A"}</div>)}
-                    <div><strong>Referred By:</strong> {userData?.referedby || 'None'}</div>
-                        <br />
-                    <Typography variant="h5" sx={{ textDecoration: "underline" }}>Addresses:</Typography>
+                    <div><strong>Referred By Code:</strong> {userData?.referedby || 'None'}</div>
+                    {userData?.referredByName && (
+                        <div><strong>Referrer Name:</strong> {userData?.referredByName}</div>
+                    )}
+
+
+                    {/* {userData?.role !== "superadmin" && (
+                        <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: "10px", paddingTop: "10px" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <label htmlFor="referral-input" style={{ fontWeight: 600 }}>Update Referral Code</label>
+                                <input
+                                    id="referral-input"
+                                    type="text"
+                                    value={newReferedBy}
+                                    onChange={(e) => setNewReferedBy(e.target.value)}
+                                    placeholder="Enter new referral code"
+                                    style={{
+                                        width: "100%",
+                                        padding: "10px",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "6px",
+                                        fontSize: "14px",
+                                        color: "black",
+                                    }}
+                                />
+                            </div>
+                            <button
+                                onClick={handleReferralUpdate}
+                                style={{
+                                    width: "fit-content",
+                                    padding: "10px 18px",
+                                    backgroundColor: "#6C5CE7",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Save Referral Code
+                            </button>
+                        </div>
+                    )} */}
+
+
+                    <br />
+                    <Typography variant="h5" sx={{ textDecoration: "underline", color: "#2c3e50", fontWeight: "bold" }}>ADDRESSES</Typography>
                     {userData?.addresses?.map((address) => (
                         <Box sx={{ display: "flex", flexDirection: "row", backgroundColor: "white", color: "black", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", marginBottom: "30px" }}>
                             <Box sx={{ display: "flex", flexDirection: "column" }}>

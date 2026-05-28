@@ -116,6 +116,15 @@ export const updateUserById = async (id, userData) => {
   }
 };
 
+export const updateUserReferral = async (id, referedby) => {
+  try {
+    const response = await API.put(`/users/users/referral/${id}`, { referedby });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getUserById = async (userid) => {
   try {
     const response = await API.get(`/users/users/${userid}`);
