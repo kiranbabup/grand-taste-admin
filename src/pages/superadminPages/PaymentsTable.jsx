@@ -15,6 +15,8 @@ import {
   FormControl,
   Select,
   MenuItem,
+  TextField,
+  Button,
 } from "@mui/material";
 import {
   PaymentsOutlined,
@@ -33,7 +35,8 @@ const PaymentsTable = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
 
   const fetchPayments = async (currentPage, currentLimit) => {
     try {
@@ -61,6 +64,110 @@ const PaymentsTable = () => {
   const handleRowsPerPageChange = (event) => {
     setRowsPerPage(event.target.value);
     setPage(1); // Reset to first page when limit changes
+  };
+
+  const handleDownloadPayments = async () => {
+    if (!exportStartDate || !exportEndDate) {
+      toast.error("Please select both start and end dates");
+      return;
+    }
+
+    if (exportEndDate < exportStartDate) {
+      toast.error("End date cannot be earlier than start date");
+      return;
+    }
+
+    const minDate = "2026-05-15";
+    const today = new Date().toISOString().split("T")[0];
+
+    if (exportStartDate < minDate) {
+      toast.error("Start date cannot be earlier than 2026-05-15");
+      return;
+    }
+
+    if (exportEndDate > today) {
+      toast.error("End date cannot be later than today");
+      return;
+    }
+
+    try {
+      const response = await API.get("/users/getpayments/export", {
+        params: {
+          startDate: exportStartDate,
+          endDate: exportEndDate,
+        },
+      });
+
+      const payments = response.data.payments || [];
+      if (payments.length === 0) {
+        toast.error("No successful payments found for selected dates");
+        return;
+      }
+
+      const XLSX = await import("xlsx");
+      const formattedData = payments.map((item, index) => ({
+        "S.No": index + 1,
+        Date: item.createdAt || "",
+        "User Name": item.user?.name || item.username || "",
+        "Phone Number": item.user?.phone || "",
+        Role: item.user?.role || item.role || "",
+        "Order ID": item.order?.orderId || "",
+        Method: item.payment_method || "",
+        "Transaction ID": item.transaction_id || "",
+        "Amount (₹)": parseFloat(item.credited_amount || 0).toFixed(2),
+        Status: item.status || "",
+      }));
+
+      const totalAmount = payments.reduce(
+        (sum, item) => sum + parseFloat(item.credited_amount || 0),
+        0,
+      );
+      const gstAmount = totalAmount * 0.06;
+      const grandTotalInclusiveGst = totalAmount + gstAmount;
+
+      formattedData.push({
+        "S.No": "",
+        Date: "",
+        "User Name": "Grand Total",
+        "Phone Number": "",
+        Role: "",
+        "Order ID": "",
+        Method: "",
+        "Transaction ID": "",
+        "Amount (₹)": totalAmount.toFixed(2),
+        Status: "",
+      });
+      formattedData.push({
+        "S.No": "",
+        Date: "",
+        "User Name": "Grand Total (incl. GST 6%)",
+        "Phone Number": "",
+        Role: "",
+        "Order ID": "",
+        Method: "",
+        "Transaction ID": "",
+        "Amount (₹)": grandTotalInclusiveGst.toFixed(2),
+        Status: "",
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Payments Export");
+
+      const now = new Date();
+      const timestamp =
+        now.getFullYear().toString() +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        String(now.getDate()).padStart(2, "0") +
+        String(now.getHours()).padStart(2, "0") +
+        String(now.getMinutes()).padStart(2, "0");
+
+      XLSX.writeFile(workbook, `payments_export_${timestamp}.xlsx`);
+      toast.success("Payment export downloaded successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to download payment export");
+    }
   };
 
   const getStatusColor = (status) => {
@@ -93,6 +200,34 @@ const PaymentsTable = () => {
           variant="filled"
           sx={{ fontWeight: "bold", px: 1, height: 40, borderRadius: 2 }}
         />
+      </Box>
+
+      <Box sx={{ mb: 3, display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
+        <TextField
+          label="Start Date"
+          type="date"
+          value={exportStartDate}
+          onChange={(e) => setExportStartDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ min: "2026-05-15", max: new Date().toISOString().split("T")[0] }}
+          sx={{ minWidth: 180 }}
+        />
+        <TextField
+          label="End Date"
+          type="date"
+          value={exportEndDate}
+          onChange={(e) => setExportEndDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ min: "2026-05-15", max: new Date().toISOString().split("T")[0] }}
+          sx={{ minWidth: 180 }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleDownloadPayments}
+          sx={{ bgcolor: "#0f766e", "&:hover": { bgcolor: "#0d645d" }, textTransform: "none" }}
+        >
+          Export Success Payments
+        </Button>
       </Box>
 
       <TableContainer

@@ -29,7 +29,7 @@ import {
 } from "../services/orderApis";
 import { Visibility } from "@mui/icons-material";
 import OrderDetails from "./OrderDetails";
-import LsService,{ storageKey } from "../services/localstorage";
+import LsService, { storageKey } from "../services/localstorage";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -105,7 +105,7 @@ const Orders = () => {
   const handleStatusUpdate = async (orderId, nextStatus) => {
     try {
       console.log(userRole);
-      
+
       const role = (userRole || "").toLowerCase();
 
       const superadminStatuses = [
@@ -399,7 +399,8 @@ const Orders = () => {
         <Box sx={{ flex: 1 }}>GST</Box>
         <Box sx={{ flex: 1 }}>Total</Box>
         <Box sx={{ flex: 1 }}>Payment Status</Box>
-        <Box sx={{ flex: 2 }}>Action</Box>
+        <Box sx={{ flex: 1 }}>View</Box>
+        <Box sx={{ flex: 1 }}>Actions</Box>
       </Box>
 
       {loading ? (
@@ -462,9 +463,7 @@ const Orders = () => {
                   ₹{Number(order.totalPrice).toFixed(2)}
                 </Box>
                 <Box sx={{ flex: 1 }}>{order.isPaid ? "Paid" : "Pending"}</Box>
-                <Box
-                  sx={{ flex: 2, display: "flex", justifyContent: "center" }}
-                >
+                <Box sx={{ flex: 1 }}>
                   <IconButton
                     sx={{ mr: 2 }}
                     size="small"
@@ -478,8 +477,8 @@ const Orders = () => {
                   >
                     <Visibility fontSize="small" />
                   </IconButton>
-                  {renderStatusButtons(order)}
                 </Box>
+                <Box sx={{ flex: 1 }}>{renderStatusButtons(order)}</Box>
               </AccordionSummary>
               <AccordionDetails sx={{ bgcolor: "#f1f5f9", p: 3 }}>
                 <Typography

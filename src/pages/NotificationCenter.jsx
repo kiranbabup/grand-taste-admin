@@ -75,6 +75,19 @@ const NotificationCenter = () => {
         }
     };
 
+    const handleDeleteNotification = async (id) => {
+        try {
+            await API.put(`/users/notifications/delete/${id}`);
+            setNotifications((prev) =>
+                prev.filter((n) => n.id !== id)
+            );
+            toast.success("Notification deleted successfully");
+        } catch (error) {
+            console.error("Error deleting notification:", error);
+            toast.error("Failed to delete notification");
+        }
+    };
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     };
@@ -201,6 +214,9 @@ const NotificationCenter = () => {
                                                 <TableCell sx={{ fontWeight: 700, color: "text.secondary", py: 2 }}>TITLE & MESSAGE</TableCell>
                                                 <TableCell sx={{ fontWeight: 700, color: "text.secondary", py: 2 }}>TIME</TableCell>
                                                 <TableCell sx={{ fontWeight: 700, color: "text.secondary", py: 2 }} align="right">
+                                                    MARK
+                                                </TableCell>
+                                                <TableCell sx={{ fontWeight: 700, color: "text.secondary", py: 2 }} align="right">
                                                     ACTION
                                                 </TableCell>
                                             </TableRow>
@@ -286,6 +302,17 @@ const NotificationCenter = () => {
                                                                 </Tooltip>
                                                             )}
                                                         </TableCell>
+                                                        <TableCell align="right">
+                                                            <Button
+                                                                variant="contained"
+                                                                color="error"
+                                                                size="small"
+                                                                onClick={() => handleDeleteNotification(notification.id)}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </TableCell>
+
                                                     </TableRow>
                                                 );
                                             })}

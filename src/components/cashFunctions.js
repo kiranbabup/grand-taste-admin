@@ -34,13 +34,14 @@ export const generateReceipt = (logo, orderData, poweredBy, gstNumber, companyNa
                 </div>
             </div>
 
-            <!-- Details Grid -->
+            <!-- Details Grid <strong>Referred By:</strong> ${orderData?.User?.referedby || "N/A"}-->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                 <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
                     <h3 style="margin: 0 0 15px; font-size: 16px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #0f766e; display: inline-block; padding-bottom: 4px;">Billing Details</h3>
                     <div style="display: grid; gap: 8px;">
                         <p style="margin: 0; font-size: 15px;"><strong>Customer Name:</strong> ${orderData?.shippingAddress?.name}</p>
-                        <p style="margin: 0; font-size: 15px;"><strong>Phone:</strong> ${orderData?.shippingAddress?.phone}   <strong>Referred By:</strong> ${orderData?.User?.referedby || "N/A"}</p>
+                        <p style="margin: 0; font-size: 15px;"><strong>Phone:</strong> ${orderData?.shippingAddress?.phone}   </p>
+                        
                         <p style="margin: 0; font-size: 15px;"><strong>Address:</strong>
                         <br/>
                             ${orderData.shippingAddress?.h_no ? `
