@@ -62,11 +62,13 @@ export const getUsersByRole = async (role, page = 1, limit = 10) => {
  * @param {string} searchString 
  * @returns {Promise<Array>}
  */
-export const getUserBySearch = async (searchString) => {
+export const getUserBySearch = async (searchString, page = 1, limit = 10, role = null) => {
   try {
-    const response = await API.get(`/users/users/search/${searchString}`);
-    // console.log(response.data);
-    
+    let url = `/users/users/search/${searchString}?page=${page}&limit=${limit}`;
+    if (role) {
+      url += `&role=${encodeURIComponent(role)}`;
+    }
+    const response = await API.get(url);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

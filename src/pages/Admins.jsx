@@ -36,7 +36,9 @@ const Admins = () => {
 
   const toggleUserStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
-    if (window.confirm(`Are you sure you want to set this admin to ${newStatus}?`)) {
+    if (
+      window.confirm(`Are you sure you want to set this admin to ${newStatus}?`)
+    ) {
       try {
         await updateUserById(id, { status: newStatus });
         toast.success(`Admin status updated to ${newStatus}`);
@@ -50,8 +52,16 @@ const Admins = () => {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+        }}
+      >
         <h2 style={{ color: "black", margin: 0 }}>Admins</h2>
+        
         <button
           onClick={() => navigate("/register-admin")}
           style={{
@@ -66,14 +76,15 @@ const Admins = () => {
         >
           + Add Admin
         </button>
+
+        <FormControl size="small" style={{ marginBottom: "10px" }}>
+          <Select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={25}>25</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+          </Select>
+        </FormControl>
       </div>
-      <FormControl size="small" style={{ marginBottom: "10px" }}>
-        <Select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-          <MenuItem value={10}>10</MenuItem>
-          <MenuItem value={25}>25</MenuItem>
-          <MenuItem value={50}>50</MenuItem>
-        </Select>
-      </FormControl>
       <UserTable
         users={admins}
         onToggleStatus={toggleUserStatus}

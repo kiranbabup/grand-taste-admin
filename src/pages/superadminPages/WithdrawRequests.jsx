@@ -232,7 +232,7 @@ const WithdrawRequests = () => {
             <PaymentsOutlined sx={{ fontSize: 40 }} /> Withdraw Requests
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Monitoring all incoming payments and transaction statuses
+            Monitoring all withdrawal transactions and managing their statuses.
           </Typography>
         </Box>
 

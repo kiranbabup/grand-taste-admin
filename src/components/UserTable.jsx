@@ -27,6 +27,7 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Sno</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Name</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Phone</th>
+              <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Role</th>
               <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "left" }}>Status</th>
               {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Referal Code</th>}
               {/* {type !== "customer" && <th style={{ backgroundColor: "#6C5CE7", color: "white", padding: "12px", textAlign: "center" }}>Earnings</th>} */}
@@ -35,65 +36,83 @@ const UserTable = ({ users, onToggleStatus, type, totalPages = 1, currentPage = 
             </tr>
           </thead>
           <tbody>
-            {users.map((user, index) => (
-              <tr
-                key={user.id || user.user_id}
-                style={{
-                  borderBottom: "1px solid #eee",
-                  transition: "background-color 0.2s"
-                }}
-              >
-                <td style={{ padding: "12px" }}>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-                <td style={{ padding: "12px" }}>{user.name}</td>
-                <td style={{ padding: "12px" }}>{user.phone}</td>
-                <td style={{ padding: "12px" }}>
-                  <span className={`status-badge ${user.status}`} style={{
-                    padding: "4px 8px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    textTransform: "capitalize",
-                    backgroundColor: user.status === 'active' ? "#e6f8f4" : "#feeaea",
-                    color: user.status === 'active' ? "#00b894" : "#e74c3c"
-                  }}>
-                    {user.status || 'active'}
-                  </span>
-                </td>
-                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.referalcode || 'null'}</td>}
-                {/* {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>} */}
-                {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.directReferrals}</td>}
-                <td style={{ padding: "12px", textAlign: "center" }}>
-                  <div className="action-buttons" style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleViewClick(user.id)}
-                      style={{ color: "#6C5CE7" }}
-                      title="View Details"
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleStatus(user.id || user.user_id, user.status || 'active');
-                      }}
-                      style={{
-                        color: "white",
-                        backgroundColor: user.status === 'inactive' ? "#2ecc71" : "#e74c3c",
-                        border: "none",
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        minWidth: "70px"
-                      }}
-                    >
-                      {user.status === 'inactive' ? 'Enable' : 'Disable'}
-                    </button>
-                  </div>
+            {users.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={type !== "customer" ? 7 : 5}
+                  style={{
+                    padding: "24px",
+                    textAlign: "center",
+                    color: "#4b5563",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                  }}
+                >
+                  No results found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              users.map((user, index) => (
+                <tr
+                  key={user.id || user.user_id}
+                  style={{
+                    borderBottom: "1px solid #eee",
+                    transition: "background-color 0.2s"
+                  }}
+                >
+                  <td style={{ padding: "12px" }}>{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                  <td style={{ padding: "12px" }}>{user.name}</td>
+                  <td style={{ padding: "12px" }}>{user.phone}</td>
+                  <td style={{ padding: "12px" }}>{user.role}</td>
+                  <td style={{ padding: "12px" }}>
+                    <span className={`status-badge ${user.status}`} style={{
+                      padding: "4px 8px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      textTransform: "capitalize",
+                      backgroundColor: user.status === 'active' ? "#e6f8f4" : "#feeaea",
+                      color: user.status === 'active' ? "#00b894" : "#e74c3c"
+                    }}>
+                      {user.status || 'active'}
+                    </span>
+                  </td>
+                  {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.referalcode || 'null'}</td>}
+                  {/* {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>₹{user.earnings || 0}</td>} */}
+                  {type !== "customer" && <td style={{ padding: "12px", textAlign: "center" }}>{user.directReferrals}</td>}
+                  <td style={{ padding: "12px", textAlign: "center" }}>
+                    <div className="action-buttons" style={{ display: "flex", gap: "10px", justifyContent: "center", alignItems: "center" }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleViewClick(user.id)}
+                        style={{ color: "#6C5CE7" }}
+                        title="View Details"
+                      >
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleStatus(user.id || user.user_id, user.status || 'active');
+                        }}
+                        style={{
+                          color: "white",
+                          backgroundColor: user.status === 'inactive' ? "#2ecc71" : "#e74c3c",
+                          border: "none",
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          minWidth: "70px"
+                        }}
+                      >
+                        {user.status === 'inactive' ? 'Enable' : 'Disable'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
