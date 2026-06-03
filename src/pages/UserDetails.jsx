@@ -49,6 +49,7 @@ const UserDetails = () => {
       let userDetails = null;
       if (userData) {
         userDetails = userData;
+        console.log(userData);
         setUserData(userData);
         setNewReferedBy(userData.referedby || "");
       }
@@ -205,6 +206,11 @@ const UserDetails = () => {
               <strong>Earnings:</strong> ₹{userData?.earnings || 0}
             </div>
           )}
+          {userData?.role !== "customer" && (
+            <div>
+              <strong>Withdrawn:</strong> ₹{userData?.withdrawn || 0}
+            </div>
+          )}
           <div>
             <strong>Pincode:</strong> {userData?.pincode || "N/A"}
           </div>
@@ -225,7 +231,7 @@ const UserDetails = () => {
             </div>
           )}
 
-          {(userRole === "superadmin" && userData?.role === "customer") && (
+          {userRole === "superadmin" && userData?.role === "customer" && (
             <div
               style={{
                 gridColumn: "1 / -1",
@@ -274,8 +280,7 @@ const UserDetails = () => {
               </button> */}
             </div>
           )}
-
-          <br />
+          {userData?.role !== "customer" && <br />}
           <Typography
             variant="h5"
             sx={{
@@ -286,6 +291,7 @@ const UserDetails = () => {
           >
             ADDRESSES
           </Typography>
+          <br />
           {userData?.addresses?.map((address) => (
             <Box
               sx={{

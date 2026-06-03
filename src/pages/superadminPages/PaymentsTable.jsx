@@ -37,6 +37,7 @@ const PaymentsTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [exportStartDate, setExportStartDate] = useState("");
   const [exportEndDate, setExportEndDate] = useState("");
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
 
   const fetchPayments = async (currentPage, currentLimit) => {
     try {
@@ -85,8 +86,8 @@ const PaymentsTable = () => {
       return;
     }
 
-    if (exportEndDate > today) {
-      toast.error("End date cannot be later than today");
+    if (exportEndDate > yesterday) {
+      toast.error("End date cannot be later than yesterday");
       return;
     }
 
@@ -140,13 +141,13 @@ const PaymentsTable = () => {
       formattedData.push({
         "S.No": "",
         Date: "",
-        "User Name": "Grand Total (incl. GST 6%)",
+        "User Name": "GST 6% (included in total)",
         "Phone Number": "",
         Role: "",
         "Order ID": "",
         Method: "",
         "Transaction ID": "",
-        "Amount (₹)": grandTotalInclusiveGst.toFixed(2),
+        "Amount (₹)": gstAmount.toFixed(2),
         Status: "",
       });
 
@@ -209,7 +210,7 @@ const PaymentsTable = () => {
           value={exportStartDate}
           onChange={(e) => setExportStartDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
-          inputProps={{ min: "2026-05-15", max: new Date().toISOString().split("T")[0] }}
+          inputProps={{ min: "2026-05-15", max: yesterday }}
           sx={{ minWidth: 180 }}
         />
         <TextField
@@ -218,7 +219,7 @@ const PaymentsTable = () => {
           value={exportEndDate}
           onChange={(e) => setExportEndDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
-          inputProps={{ min: "2026-05-15", max: new Date().toISOString().split("T")[0] }}
+          inputProps={{ min: "2026-05-15", max: yesterday }}
           sx={{ minWidth: 180 }}
         />
         <Button
@@ -317,7 +318,7 @@ const PaymentsTable = () => {
                         <TableCell sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
                           {item.transaction_id || "N/A"}
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: "#1a237e" }}>
+                        <TableCell sx={{ fontWeight: 800, color: "#1a237e", textAlign: "right", paddingRight: 5 }}>
                           ₹{parseFloat(item.credited_amount).toLocaleString()}
                         </TableCell>
                         <TableCell>
